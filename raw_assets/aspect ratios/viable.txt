@@ -1,0 +1,6 @@
+5:4 	1.25	# blockier
+4:3 	1.33	# bit blocky
+3:2		1.5		# looks best
+16:10 	1.6		# slightly less wide, but still wide
+5:3		1.66	# untested yet
+16:9 	1.77	# too wide

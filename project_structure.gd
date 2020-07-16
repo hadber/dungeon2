@@ -1,3 +1,4 @@
+"""
 /
 	.gdignore
 	raw_assets/     # work in progress assests (Inkspace, Blender, Krita, etc WIP files
@@ -25,3 +26,4 @@
 Google Drive folder:
 
 https://drive.google.com/drive/folders/1CVA969nlsGppeC6OkA97Y6ZF9k4_EaMv
+"""
