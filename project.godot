@@ -21,6 +21,12 @@ _global_script_class_icons={
 [application]
 
 config/name="Dungeon 2"
+run/main_scene="res://world/floor_1/Room.tscn"
+
+[display]
+
+window/size/width=1280
+window/size/height=720
 
 [gdnative]
 

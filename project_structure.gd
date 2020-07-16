@@ -1,24 +1,24 @@
 /
-    .gdignore
-    raw_assets/     # work in progress assests (Inkspace, Blender, Krita, etc WIP files
+	.gdignore
+	raw_assets/     # work in progress assests (Inkspace, Blender, Krita, etc WIP files
   
   entities/
-      player/
-        scripts/
-      scenes/
-            res/
-    
-    enemy/
-        
-    weapon/
-        sword.gd
-      staff.gd
-    common_assets/
-      fonts/
-    themes/
+	  player/
+		scripts/
+	  scenes/
+			res/
+	
+	enemy/
+		
+	weapon/
+		sword.gd
+	  staff.gd
+	common_assets/
+	  fonts/
+	themes/
   
   ui/
-      fonts/
+	  fonts/
 
 
 
