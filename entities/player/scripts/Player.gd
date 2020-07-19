@@ -42,7 +42,7 @@ func get_input():
 func _physics_process(delta):
 	var axis = get_input_axis()
 	if(axis == Vector2.ZERO):
-		apply_friction(ACCELERATION * delta)
+		apply_friction(ACCELERATION * delta * 30)
 	else:
 		apply_movement(axis * ACCELERATION * delta)
 	motion = move_and_slide(motion)
