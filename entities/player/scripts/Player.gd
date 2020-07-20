@@ -4,7 +4,6 @@ var MAX_SPEED = 400
 var ACCELERATION = 2000
 var motion = Vector2.ZERO # motion on the cartesian plane
 
-
 func get_input_axis():
 	var axis = Vector2.ZERO
 	axis.x = Input.get_action_strength("right") - Input.get_action_strength("left") 
@@ -34,5 +33,5 @@ func _physics_process(delta):
 	else: # going diagonal - dont deaccelerate any 
 		apply_movement(axis * ACCELERATION * delta)
 	motion = move_and_slide(motion)
-#	print(motion)
+
 
