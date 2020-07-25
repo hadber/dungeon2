@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/walk6.png-f84e9c630d38c411141028ba6f3c0a76.stex"
+path="res://.import/running_smoothv4.svg-30bb23b50b6e558f90fbfaa9d8daa6ce.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://entities/player/res/walk6.png"
-dest_files=[ "res://.import/walk6.png-f84e9c630d38c411141028ba6f3c0a76.stex" ]
+source_file="res://raw_assets/player_anim_v1/all/running_smoothv4.svg"
+dest_files=[ "res://.import/running_smoothv4.svg-30bb23b50b6e558f90fbfaa9d8daa6ce.stex" ]
 
 [params]
 
@@ -20,7 +20,7 @@ compress/hdr_mode=0
 compress/bptc_ldr=0
 compress/normal_map=0
 flags/repeat=0
-flags/filter=false
+flags/filter=true
 flags/mipmaps=false
 flags/anisotropic=false
 flags/srgb=2
