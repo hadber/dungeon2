@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/running_smoothv3-Sheet.png-c9dee5f03dabca225e44740bfc49252e.stex"
+path="res://.import/idle-Sheet.png-e6505806d17fcee6964ed4a90ccd4d19.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://entities/player/res/run/running_smoothv3-Sheet.png"
-dest_files=[ "res://.import/running_smoothv3-Sheet.png-c9dee5f03dabca225e44740bfc49252e.stex" ]
+source_file="res://raw_assets/player_anim_v2/run/idle-Sheet.png"
+dest_files=[ "res://.import/idle-Sheet.png-e6505806d17fcee6964ed4a90ccd4d19.stex" ]
 
 [params]
 
@@ -20,7 +20,7 @@ compress/hdr_mode=0
 compress/bptc_ldr=0
 compress/normal_map=0
 flags/repeat=0
-flags/filter=false
+flags/filter=true
 flags/mipmaps=false
 flags/anisotropic=false
 flags/srgb=2
