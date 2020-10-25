@@ -13,8 +13,9 @@ func _input(event):
 		#Steam.getMediumFriendAvatar(Global.STEAM_ID)
 
 func _process(delta):
-	_read_P2P_Packet()
-
+#	_read_P2P_Packet()
+	pass
+	
 func _ready():
 	Steam.connect("avatar_loaded", self, "loaded_avatar")
 	Steam.connect("lobby_created", self, "_on_Lobby_Created")
@@ -28,8 +29,9 @@ func _ready():
 	Steam.connect("p2p_session_request", self, "_on_P2P_Session_Request")
 	Steam.connect("p2p_session_connect_fail", self, "_on_P2P_Session_Connect_Fail")
 	# Check for command line arguments
-	_check_Command_Line()
+	#_check_Command_Line()
 
+"""
 func _check_Command_Line():
 	var ARGUMENTS = OS.get_cmdline_args()
 
@@ -47,7 +49,7 @@ func _check_Command_Line():
 			# A Steam connection argument exists
 			if ARGUMENT == "+connect_lobby":
 				LOBBY_INVITE_ARG = true
-
+"""
 func loaded_avatar(id, size, buffer):
 	print("Avatar for user: " + str(id))
 	print("Size: " + str(size))
