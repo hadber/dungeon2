@@ -36,15 +36,14 @@ margin_top = 18.0
 margin_right = 148.0
 margin_bottom = 22.0
 
-[node name="Users" type="Control" parent="VBoxContainer"]
+[node name="Users" type="VBoxContainer" parent="VBoxContainer"]
 margin_top = 26.0
 margin_right = 148.0
-margin_bottom = 26.0
+margin_bottom = 58.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Users"]
-margin_top = 4.0
 margin_right = 148.0
-margin_bottom = 36.0
+margin_bottom = 32.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
