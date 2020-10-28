@@ -4,7 +4,7 @@
 [ext_resource path="res://entities/player/res/player_spritesheet.png" type="Texture" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 15, 4.99997 )
+extents = Vector2( 15, 6.96482 )
 
 [sub_resource type="CapsuleShape2D" id=2]
 radius = 19.0
@@ -58,8 +58,7 @@ hframes = 6
 frame = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
-position = Vector2( -3, 41 )
+position = Vector2( -5, 34 )
 shape = SubResource( 1 )
 
 [node name="KinematicBody2D" type="KinematicBody2D" parent="."]
