@@ -30,6 +30,7 @@ func _on_Lobby_members_changed(): # triggered when someones leaves/joins the lob
 		var separator = VSeparator.new()
 		var container = HBoxContainer.new()
 		
+		print('loading for gamer: ', steam_name)
 		avatar.texture = MEMBER['avatar']
 		steam_name.text = MEMBER['steam_name']
 		

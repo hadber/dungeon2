@@ -4,6 +4,7 @@ var STEAM_LOBBY_ID = 0
 var DATA
 var LOBBY_INVITE_ARG = false
 var lobby_changed:bool = false
+var members_downloaded = 0
 
 signal lobby_members_changed
 
@@ -320,6 +321,7 @@ func loaded_avatar(id, size, buffer):
 
 	AVATAR_TEXTURE.create_from_image(AVATAR)
 	
+	print('able to make avatar for: ', id)
 	for MEMBER in Global.LOBBY_MEMBERS:
 		if MEMBER['steam_id'] == id:
 			MEMBER['avatar'] = AVATAR_TEXTURE
@@ -327,7 +329,9 @@ func loaded_avatar(id, size, buffer):
 	# just to be safe in the future, we don't know if we'll need the avatar for other
 	# things in the networking side and we don't want to update it every time we get a new
 	# avatar
-	if lobby_changed:
+	members_downloaded += 1
+	if lobby_changed && members_downloaded == len(Global.LOBBY_MEMBERS):
+		members_downloaded = 0
 		lobby_changed = false
 		emit_signal("lobby_members_changed")
 	
