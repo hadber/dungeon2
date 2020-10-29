@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://world/floor_1/room3-2.png" type="Texture" id=1]
 [ext_resource path="res://entities/player/Player.tscn" type="PackedScene" id=2]
 [ext_resource path="res://world/networking/Networking.gd" type="Script" id=3]
 [ext_resource path="res://world/floor_1/ball_draw.gd" type="Script" id=4]
 [ext_resource path="res://entities/ui/playerlist.tscn" type="PackedScene" id=5]
+[ext_resource path="res://world/networking/Chat.tscn" type="PackedScene" id=6]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 375, 37 )
@@ -75,10 +76,7 @@ shape = SubResource( 4 )
 [node name="ball_draw" type="Node2D" parent="Ball"]
 script = ExtResource( 4 )
 
-[node name="AvatarSprite" type="Sprite" parent="."]
-position = Vector2( 22, 68 )
-
-[node name="Container" parent="." instance=ExtResource( 5 )]
+[node name="Playerlist" parent="." instance=ExtResource( 5 )]
 margin_left = 357.951
 margin_top = 151.029
 margin_right = 397.951
@@ -86,3 +84,5 @@ margin_bottom = 191.029
 
 [node name="Networking" type="Node" parent="."]
 script = ExtResource( 3 )
+
+[node name="Chat" parent="." instance=ExtResource( 6 )]
