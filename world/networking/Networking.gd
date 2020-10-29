@@ -1,6 +1,5 @@
 extends Node
 
-var STEAM_LOBBY_ID = 0
 var DATA
 var LOBBY_INVITE_ARG = false
 var lobby_changed:bool = false
@@ -24,7 +23,7 @@ func _ready():
 	Steam.connect("lobby_match_list", self, "_on_Lobby_Match_List")
 	Steam.connect("lobby_joined", self, "_on_Lobby_Joined")
 	Steam.connect("lobby_chat_update", self, "_on_Lobby_Chat_Update")
-	Steam.connect("lobby_message", self, "_on_Lobby_Message")
+#	Steam.connect("lobby_message", self, "_on_Lobby_Message")
 #	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update")
 	Steam.connect("lobby_invite", self, "_on_Lobby_Invite")
 	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
@@ -55,14 +54,14 @@ func _check_Command_Line():
 
 func _create_Lobby():
 	# Make sure a lobby is not already set
-	if STEAM_LOBBY_ID == 0:
+	if Global.STEAM_LOBBY_ID == 0:
 		Steam.createLobby(1, 2)
 
 func _on_Lobby_Created(connect, lobbyID):
 	if connect == 1:
 		# Set the lobby ID
-		STEAM_LOBBY_ID = lobbyID
-		print("Created a lobby: "+str(STEAM_LOBBY_ID))
+		Global.STEAM_LOBBY_ID = lobbyID
+		print("Created a lobby: "+str(Global.STEAM_LOBBY_ID))
 
 		# Set some lobby data
 		Steam.setLobbyData(lobbyID, "name", "Gramps' Lobby")
@@ -111,7 +110,7 @@ func _join_Lobby(lobbyID):
 func _on_Lobby_Joined(lobbyID, permissions, locked, response):
 	
 	# Set this lobby ID as your lobby ID
-	STEAM_LOBBY_ID = lobbyID
+	Global.STEAM_LOBBY_ID = lobbyID
 	
 	# Get the lobby members
 	_get_Lobby_Members()
@@ -132,21 +131,23 @@ func _get_Lobby_Members():
 
 	# Clear your previous lobby list
 	Global.LOBBY_MEMBERS.clear()
+	Global.NAMES.clear()
 
 	# Get the number of members from this lobby from Steam
-	var MEMBERS = Steam.getNumLobbyMembers(STEAM_LOBBY_ID)
+	var MEMBERS = Steam.getNumLobbyMembers(Global.STEAM_LOBBY_ID)
 
 	# Get the data of these players from Steam
 	for MEMBER in range(0, MEMBERS):
 
 		# Get the member's Steam ID
-		var MEMBER_STEAM_ID = Steam.getLobbyMemberByIndex(STEAM_LOBBY_ID, MEMBER)
+		var MEMBER_STEAM_ID = Steam.getLobbyMemberByIndex(Global.STEAM_LOBBY_ID, MEMBER)
 
 		# Get the member's Steam name
 		var MEMBER_STEAM_NAME = Steam.getFriendPersonaName(MEMBER_STEAM_ID)
 
 		# Add them to the list
 		Global.LOBBY_MEMBERS.append({"steam_id":MEMBER_STEAM_ID, "steam_name":MEMBER_STEAM_NAME})
+		Global.NAMES[MEMBER_STEAM_ID] = MEMBER_STEAM_NAME
 		Steam.getPlayerAvatar(1, MEMBER_STEAM_ID) # [1 - 3], SMALL to LARGE
 		# apparently Steam.getSmallFriendAvatar does not seem to work, or at least
 		# I'm not entirely sure how it works
@@ -196,7 +197,7 @@ func _on_Send_Chat_pressed():
 	var MESSAGE = $Chat.get_text()
 
 	# Pass the message to Steam
-	var SENT = Steam.sendLobbyChatMsg(STEAM_LOBBY_ID, MESSAGE)
+	var SENT = Steam.sendLobbyChatMsg(Global.STEAM_LOBBY_ID, MESSAGE)
 
 	# Was it sent successfully?
 	if not SENT:
@@ -208,13 +209,13 @@ func _on_Send_Chat_pressed():
 func _leave_Lobby():
 
 	# If in a lobby, leave it
-	if STEAM_LOBBY_ID != 0:
+	if Global.STEAM_LOBBY_ID != 0:
 
 		# Send leave request to Steam
-		Steam.leaveLobby(STEAM_LOBBY_ID)
+		Steam.leaveLobby(Global.STEAM_LOBBY_ID)
 
 		# Wipe the Steam lobby ID then display the default lobby ID and player list title
-		STEAM_LOBBY_ID = 0
+		Global.STEAM_LOBBY_ID = 0
 
 		# Close session with all users
 		for MEMBERS in Global.LOBBY_MEMBERS:
@@ -222,6 +223,7 @@ func _leave_Lobby():
 		
 		# Clear the local lobby list
 		Global.LOBBY_MEMBERS.clear()
+		Global.NAMES.clear()
 
 func _on_P2P_Session_Request(remoteID):
 	

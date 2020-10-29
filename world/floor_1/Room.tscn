@@ -22,6 +22,9 @@ radius = 22.0907
 
 [node name="Room" type="Node"]
 
+[node name="Networking" type="Node" parent="."]
+script = ExtResource( 3 )
+
 [node name="room4-2" type="Sprite" parent="."]
 position = Vector2( 450, 300 )
 scale = Vector2( 7.5, 7.5 )
@@ -82,7 +85,8 @@ margin_top = 151.029
 margin_right = 397.951
 margin_bottom = 191.029
 
-[node name="Networking" type="Node" parent="."]
-script = ExtResource( 3 )
-
-[node name="Chat" parent="." instance=ExtResource( 6 )]
+[node name="ChatBox" parent="." instance=ExtResource( 6 )]
+margin_left = 81.7768
+margin_top = 356.584
+margin_right = 341.777
+margin_bottom = 516.584

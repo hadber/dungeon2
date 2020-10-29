@@ -4,7 +4,7 @@ extends Control
 # var a = 2
 # var b = "text"
 
-func _input(event):
+func _unhandled_input(event):
 	if event.is_action_pressed("show_playerlist"):
 		self.visible = true
 	elif event.is_action_released("show_playerlist"):
