@@ -4,15 +4,17 @@ var DATA
 var LOBBY_INVITE_ARG = false
 var lobby_changed:bool = false
 var members_downloaded = 0
+var isPlayerHost:bool
 
 signal lobby_members_changed
 
 func _input(event):
-	if event.is_action_pressed("connectivity"):
+#	if event.is_action_pressed("connectivity"):
 		#print(Steam.AVATAR_SMAL)
 		#Steam.getMediumFriendAvatar(Global.STEAM_ID)
-		for member in Global.LOBBY_MEMBERS:
-			print(member)
+#		for member in Global.LOBBY_MEMBERS:
+#			print(member)
+	pass
 
 func _process(delta):
 	_read_P2P_Packet()
@@ -55,7 +57,9 @@ func _check_Command_Line():
 func _create_Lobby():
 	# Make sure a lobby is not already set
 	if Global.STEAM_LOBBY_ID == 0:
-		Steam.createLobby(1, 2)
+		Steam.createLobby(1, 2) 
+		# perhaps check the response aswell and tell the player
+		# if the lobby failed to create and why?
 
 func _on_Lobby_Created(connect, lobbyID):
 	if connect == 1:
