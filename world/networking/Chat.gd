@@ -8,7 +8,7 @@ func _input(event):
 		if Global.in_dialogue: # if he presses enter while already in dialogue
 			end_dialogue() # end the dialogue, send it all and clear
 			
-			#clear char and send
+			#clear chat and send
 			if($Input.text.strip_edges() != ""):
 				Steam.sendLobbyChatMsg(Global.STEAM_LOBBY_ID, $Input.text)
 				$Chat.add_text(Global.STEAM_USERNAME + ": " + $Input.text + "\n")
