@@ -22,7 +22,6 @@ func _process(delta):
 func _ready():
 	Steam.connect("avatar_loaded", self, "loaded_avatar")
 	Steam.connect("lobby_created", self, "_on_Lobby_Created")
-	Steam.connect("lobby_match_list", self, "_on_Lobby_Match_List")
 	Steam.connect("lobby_joined", self, "_on_Lobby_Joined")
 	Steam.connect("lobby_chat_update", self, "_on_Lobby_Chat_Update")
 #	Steam.connect("lobby_message", self, "_on_Lobby_Message")
@@ -75,35 +74,8 @@ func _on_Lobby_Created(connect, lobbyID):
 		var RELAY = Steam.allowP2PPacketRelay(true)
 		print("Allowing Steam to be relay backup: "+str(RELAY))
 
-func _on_Open_Lobby_List_pressed():
-	# Set distance to worldwide
-	Steam.addRequestLobbyListDistanceFilter(3)
-
-	print("Requesting a lobby list")
-	Steam.requestLobbyList()
-
-func _on_Lobby_Match_List(lobbies):
-	for LOBBY in lobbies:
-
-		# Pull lobby data from Steam, these are specific to our example
-		var LOBBY_NAME = Steam.getLobbyData(LOBBY, "name")
-		var LOBBY_MODE = Steam.getLobbyData(LOBBY, "mode")
-
-		# Get the current number of members
-		var LOBBY_MEMBERS_LOC = Steam.getNumLobbyMembers(LOBBY)
-
-		# Create a button for the lobby
-		var LOBBY_BUTTON = Button.new()
-		LOBBY_BUTTON.set_text("Lobby ", LOBBY, ": ", LOBBY_NAME, " [", LOBBY_MODE, "] - ", LOBBY_MEMBERS_LOC, " Player(s)")
-		LOBBY_BUTTON.set_size(Vector2(800, 50))
-		LOBBY_BUTTON.set_name("lobby_"+str(LOBBY))
-		LOBBY_BUTTON.connect("pressed", self, "_join_Lobby", [LOBBY])
-
-		# Add the new lobby to the list
-		#$"Lobby Panel/Panel/Scroll/VBox".add_child(LOBBY_BUTTON)
-
 func _join_Lobby(lobbyID):
-	print("Attempting to join lobby "+str(lobbyID)+"...")
+	print("Attempting to join lobby " + str(lobbyID) + "...")
 	
 	# Clear any previous lobby members lists, if you were in a previous lobby
 	Global.LOBBY_MEMBERS.clear()
@@ -118,7 +90,7 @@ func _on_Lobby_Joined(lobbyID, permissions, locked, response):
 	
 	# Get the lobby members
 	_get_Lobby_Members()
-	
+	Global.ChatNode.add_chat("Joined lobby " + str(lobbyID))
 	# Make the initial handshake
 	_make_P2P_Handshake()
 
@@ -175,22 +147,27 @@ func _on_Lobby_Chat_Update(lobbyID, changedID, makingChangeID, chatState):
 	# If a player has joined the lobby
 	if chatState == 1:
 		print(str(CHANGER)+" has joined the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has joined the game.")
 
 	# Else if a player has left the lobby
 	elif chatState == 2:
 		print(str(CHANGER)+" has left the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has left the game.")
 
 	# Else if a player has been kicked
 	elif chatState == 8:
 		print(str(CHANGER)+" has been kicked from the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has been kicked from the lobby.")
 
 	# Else if a player has been banned
 	elif chatState == 16:
 		print(str(CHANGER)+" has been banned from the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has been banned from the lobby.")
 
 	# Else there was some unknown change
 	else:
 		print(str(CHANGER)+" did... something.")
+		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
 
 	# Update the lobby now that a change has occurred
 	_get_Lobby_Members()
@@ -235,10 +212,15 @@ func _on_P2P_Session_Request(remoteID):
 	var REQUESTER = Steam.getFriendPersonaName(remoteID)
 	
 	# Accept the P2P session; can apply logic to deny this request if needed
-	Steam.acceptP2PSessionWithUser(remoteID)
+	if(Global.NAMES.has(remoteID)):
+		Steam.acceptP2PSessionWithUser(remoteID)
+		print("Accepted P2P session with " + str(remoteID))
+		_make_P2P_Handshake()
+	else:
+		print("Rejected P2P session with " + str(remoteID))
 	
 	# Make the initial handshake
-	_make_P2P_Handshake()
+
 
 
 func _read_P2P_Packet():
@@ -261,7 +243,7 @@ func _read_P2P_Packet():
 		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
 
 		# Print the packet to output
-		print("Packet: "+str(READABLE))
+		print("Packet: " + str(READABLE))
 
 		# Append logic here to deal with packet data
 
@@ -279,35 +261,34 @@ func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
 
 	# If no error was given
 	if session_error == 0:
-		print("WARNING: Session failure with "+str(lobbyID)+" [no error given].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [no error given].")
 
 	# Else if target user was not running the same game
 	elif session_error == 1:
-		print("WARNING: Session failure with "+str(lobbyID)+" [target user not running the same game].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [target user not running the same game].")
 
 	# Else if local user doesn't own app / game
 	elif session_error == 2:
-		print("WARNING: Session failure with "+str(lobbyID)+" [local user doesn't own app / game].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [local user doesn't own app / game].")
 
 	# Else if target user isn't connected to Steam
 	elif session_error == 3:
-		print("WARNING: Session failure with "+str(lobbyID)+" [target user isn't connected to Steam].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [target user isn't connected to Steam].")
 
 	# Else if connection timed out
 	elif session_error == 4:
-		print("WARNING: Session failure with "+str(lobbyID)+" [connection timed out].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [connection timed out].")
 
 	# Else if unused
 	elif session_error == 5:
-		print("WARNING: Session failure with "+str(lobbyID)+" [unused].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [unused].")
 
 	# Else no known error
 	else:
-		print("WARNING: Session failure with "+str(lobbyID)+" [unknown error "+str(session_error)+"].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [unknown error "+str(session_error)+"].")
 
 func loaded_avatar(id, size, buffer):
-#	print("Avatar for user: " + str(id))
-#	print("Size: " + str(size))
+
 	# Create a new image and texture to fill out
 	var AVATAR = Image.new()
 	var AVATAR_TEXTURE = ImageTexture.new()
@@ -340,6 +321,3 @@ func loaded_avatar(id, size, buffer):
 		members_downloaded = 0
 		lobby_changed = false
 		emit_signal("lobby_members_changed")
-	
-	# For our purposes, set a sprite with the avatar texture
-#	$"../AvatarSprite".set_texture(AVATAR_TEXTURE)

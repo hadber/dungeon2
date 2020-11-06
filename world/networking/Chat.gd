@@ -33,6 +33,11 @@ func _on_Lobby_Message(_result, user, buffer, _chattype):
 	if(user != Global.STEAM_ID):
 		$Chat.add_text(Global.NAMES.get(user) + ": " + buffer + "\n")
 
+func add_chat(text):
+	$Chat.add_text(text + "\n")
+
 func _ready():
 	Steam.connect("lobby_message", self, "_on_Lobby_Message")
+	add_chat(">> Press enter to chat")
+	Global.ChatNode = self
 	pass

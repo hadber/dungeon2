@@ -13,6 +13,9 @@ func _unhandled_input(event):
 func _ready():
 	# initially set this to invisible
 	self.visible = false
+	$"VBoxContainer/Users/HBoxContainer/Label".queue_free()
+	$"VBoxContainer/Users/HBoxContainer/VSeparator".queue_free()
+	$"VBoxContainer/Users/HBoxContainer/TextureRect".queue_free()
 	# connect it to the signal so that only when there are changes to the lobby
 	# members (eg someone leaves or joins), the list is updated
 	$"../Networking".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
