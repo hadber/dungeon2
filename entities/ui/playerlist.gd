@@ -18,6 +18,8 @@ func _ready():
 	$"VBoxContainer/Users/HBoxContainer/TextureRect".queue_free()
 	# connect it to the signal so that only when there are changes to the lobby
 	# members (eg someone leaves or joins), the list is updated
+	
+	# warning-ignore:return_value_discarded
 	$"../Networking".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
 
 func _on_Lobby_members_changed(): # triggered when someones leaves/joins the lobby
@@ -33,7 +35,7 @@ func _on_Lobby_members_changed(): # triggered when someones leaves/joins the lob
 		var separator = VSeparator.new()
 		var container = HBoxContainer.new()
 		
-		print('loading for gamer: ', steam_name)
+
 		avatar.texture = MEMBER['avatar']
 		steam_name.text = MEMBER['steam_name']
 		

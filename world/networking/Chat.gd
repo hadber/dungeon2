@@ -10,6 +10,7 @@ func _input(event):
 			
 			#clear chat and send
 			if($Input.text.strip_edges() != ""):
+				# warning-ignore:return_value_discarded
 				Steam.sendLobbyChatMsg(Global.STEAM_LOBBY_ID, $Input.text)
 				$Chat.add_text(Global.STEAM_USERNAME + ": " + $Input.text + "\n")
 				$Input.clear()
@@ -37,6 +38,7 @@ func add_chat(text):
 	$Chat.add_text(text + "\n")
 
 func _ready():
+	# warning-ignore:return_value_discarded
 	Steam.connect("lobby_message", self, "_on_Lobby_Message")
 	add_chat(">> Press enter to chat")
 	Global.ChatNode = self

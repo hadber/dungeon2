@@ -8,7 +8,7 @@ var isPlayerHost:bool
 
 signal lobby_members_changed
 
-func _input(event):
+func _input(_event):
 #	if event.is_action_pressed("connectivity"):
 		#print(Steam.AVATAR_SMAL)
 		#Steam.getMediumFriendAvatar(Global.STEAM_ID)
@@ -16,20 +16,30 @@ func _input(event):
 #			print(member)
 	pass
 
-func _process(delta):
+func _process(_delta):
 	_read_P2P_Packet()
 
 func _ready():
+	
+# warning-ignore:return_value_discarded
 	Steam.connect("avatar_loaded", self, "loaded_avatar")
+# warning-ignore:return_value_discarded
 	Steam.connect("lobby_created", self, "_on_Lobby_Created")
-	Steam.connect("lobby_joined", self, "_on_Lobby_Joined")
+# warning-ignore:return_value_discarded
+	Steam.connect("lobby_joined", self, "_on_Lobby_Joined") 
+# warning-ignore:return_value_discarded
 	Steam.connect("lobby_chat_update", self, "_on_Lobby_Chat_Update")
+# warning-ignore:return_value_discarded
+#	Steam.connect("lobby_invite", self, "_on_Lobby_Invite")
+# warning-ignore:return_value_discarded
+	Steam.connect("p2p_session_request", self, "_on_P2P_Session_Request")
+# warning-ignore:return_value_discarded
+	Steam.connect("p2p_session_connect_fail", self, "_on_P2P_Session_Connect_Fail")
+	
+#	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
 #	Steam.connect("lobby_message", self, "_on_Lobby_Message")
 #	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update")
-	Steam.connect("lobby_invite", self, "_on_Lobby_Invite")
-	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
-	Steam.connect("p2p_session_request", self, "_on_P2P_Session_Request")
-	Steam.connect("p2p_session_connect_fail", self, "_on_P2P_Session_Connect_Fail")
+
 	# Check for command line arguments
 	_check_Command_Line()
 	_create_Lobby()
@@ -67,8 +77,8 @@ func _on_Lobby_Created(connect, lobbyID):
 		print("Created a lobby: "+str(Global.STEAM_LOBBY_ID))
 
 		# Set some lobby data
-		Steam.setLobbyData(lobbyID, "name", "Gramps' Lobby")
-		Steam.setLobbyData(lobbyID, "mode", "GodotSteam test")
+#		Steam.setLobbyData(lobbyID, "name", "Gramps' Lobby")
+#		Steam.setLobbyData(lobbyID, "mode", "GodotSteam test")
 
 		# Allow P2P connections to fallback to being relayed through Steam if needed
 		var RELAY = Steam.allowP2PPacketRelay(true)
@@ -83,7 +93,7 @@ func _join_Lobby(lobbyID):
 	# Make the lobby join request to Steam
 	Steam.joinLobby(lobbyID)
 
-func _on_Lobby_Joined(lobbyID, permissions, locked, response):
+func _on_Lobby_Joined(lobbyID, _permissions, _locked, _response):
 	
 	# Set this lobby ID as your lobby ID
 	Global.STEAM_LOBBY_ID = lobbyID
@@ -93,15 +103,6 @@ func _on_Lobby_Joined(lobbyID, permissions, locked, response):
 	Global.ChatNode.add_chat("Joined lobby " + str(lobbyID))
 	# Make the initial handshake
 	_make_P2P_Handshake()
-
-func _on_Lobby_Join_Requested(lobbyID, friendID):
-	
-	# Get the lobby owner's name
-	var OWNER_NAME = Steam.getFriendPersonaName(friendID)
-	print("Joining "+str(OWNER_NAME)+"'s lobby...")
-	
-	# Attempt to join the lobby
-	_join_Lobby(lobbyID)
 
 func _get_Lobby_Members():
 
@@ -134,12 +135,12 @@ func _get_Lobby_Members():
 func _make_P2P_Handshake():
 
 	print("Sending P2P handshake to the lobby")
-	var DATA = PoolByteArray()
-	DATA.append(256)
-	DATA.append_array(var2bytes({"message":"handshake", "from":Global.STEAM_ID}))
-	_send_P2P_Packet(DATA, 2, 0)
+	var lDATA = PoolByteArray()
+	lDATA.append(256)
+	lDATA.append_array(var2bytes({"message":"handshake", "from":Global.STEAM_ID}))
+	_send_P2P_Packet(lDATA, 2, 0)
 
-func _on_Lobby_Chat_Update(lobbyID, changedID, makingChangeID, chatState):
+func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
 
 	# Get the user who has made the lobby change
 	var CHANGER = Steam.getFriendPersonaName(makingChangeID)
@@ -200,6 +201,7 @@ func _leave_Lobby():
 
 		# Close session with all users
 		for MEMBERS in Global.LOBBY_MEMBERS:
+			# warning-ignore:return_value_discarded
 			Steam.closeP2PSessionWithUser(MEMBERS['steam_id'])
 		
 		# Clear the local lobby list
@@ -213,11 +215,12 @@ func _on_P2P_Session_Request(remoteID):
 	
 	# Accept the P2P session; can apply logic to deny this request if needed
 	if(Global.NAMES.has(remoteID)):
+		# warning-ignore:return_value_discarded
 		Steam.acceptP2PSessionWithUser(remoteID)
-		print("Accepted P2P session with " + str(remoteID))
+		print("Accepted P2P session with " + str(REQUESTER))
 		_make_P2P_Handshake()
 	else:
-		print("Rejected P2P session with " + str(remoteID))
+		print("Rejected P2P session with " + str(REQUESTER))
 	
 	# Make the initial handshake
 
@@ -236,8 +239,8 @@ func _read_P2P_Packet():
 			print("WARNING: read an empty packet with non-zero size!")
 
 		# Get the remote user's ID
-		var PACKET_ID = str(PACKET.steamIDRemote)
-		var PACKET_CODE = str(PACKET.data[0])
+		#var PACKET_ID = str(PACKET.steamIDRemote)
+		#var PACKET_CODE = str(PACKET.data[0])
 
 		# Make the packet data readable
 		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
@@ -255,10 +258,12 @@ func _send_P2P_Packet(data, send_type, channel):
 		# Loop through all members that aren't you
 		for MEMBER in Global.LOBBY_MEMBERS:
 			if MEMBER['steam_id'] != Global.STEAM_ID:
+				# warning-ignore:return_value_discarded
 				Steam.sendP2PPacket(MEMBER['steam_id'], data, send_type, channel)
 
 func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
 
+	Global.ChatNode.add_chat("P2P session connection failed, check the log for more info...")
 	# If no error was given
 	if session_error == 0:
 		print("WARNING: Session failure with " + str(lobbyID) + " [no error given].")
@@ -285,7 +290,7 @@ func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
 
 	# Else no known error
 	else:
-		print("WARNING: Session failure with " + str(lobbyID) + " [unknown error "+str(session_error)+"].")
+		print("WARNING: Session failure with " + str(lobbyID) + " [unknown error " + str(session_error) + "].")
 
 func loaded_avatar(id, size, buffer):
 
@@ -308,7 +313,6 @@ func loaded_avatar(id, size, buffer):
 
 	AVATAR_TEXTURE.create_from_image(AVATAR)
 	
-	print('able to make avatar for: ', id)
 	for MEMBER in Global.LOBBY_MEMBERS:
 		if MEMBER['steam_id'] == id:
 			MEMBER['avatar'] = AVATAR_TEXTURE
