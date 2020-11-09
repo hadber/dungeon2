@@ -62,7 +62,7 @@ func _check_Command_Line():
 			# A Steam connection argument exists
 			if ARGUMENT == "+connect_lobby":
 				LOBBY_INVITE_ARG = true
-				Global.isPlayerHost = false
+				#Global.isPlayerHost = false
 
 func _create_Lobby():
 	# Make sure a lobby is not already set
