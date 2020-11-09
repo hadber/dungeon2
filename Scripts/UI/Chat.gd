@@ -13,6 +13,10 @@ func _input(event):
 				# warning-ignore:return_value_discarded
 				Steam.sendLobbyChatMsg(Global.STEAM_LOBBY_ID, $Input.text)
 				$Chat.add_text(Global.STEAM_USERNAME + ": " + $Input.text + "\n")
+				
+				if($Input.text == "HOST"):
+					$Chat.add_text(str(Global.isPlayerHost) + "\n")
+				
 				$Input.clear()
 		else:
 			start_dialogue() # else, start a dialogue

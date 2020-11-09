@@ -4,7 +4,7 @@ var DATA
 var LOBBY_INVITE_ARG = false
 var lobby_changed:bool = false
 var members_downloaded = 0
-var isPlayerHost:bool
+
 
 signal lobby_members_changed
 
@@ -62,6 +62,7 @@ func _check_Command_Line():
 			# A Steam connection argument exists
 			if ARGUMENT == "+connect_lobby":
 				LOBBY_INVITE_ARG = true
+				Global.isPlayerHost = false
 
 func _create_Lobby():
 	# Make sure a lobby is not already set
@@ -75,7 +76,7 @@ func _on_Lobby_Created(connect, lobbyID):
 		# Set the lobby ID
 		Global.STEAM_LOBBY_ID = lobbyID
 		print("Created a lobby: "+str(Global.STEAM_LOBBY_ID))
-
+		Global.isPlayerHost = true
 		# Set some lobby data
 #		Steam.setLobbyData(lobbyID, "name", "Gramps' Lobby")
 #		Steam.setLobbyData(lobbyID, "mode", "GodotSteam test")

@@ -3,11 +3,10 @@
 [ext_resource path="res://Scripts/UI/Playerlist.gd" type="Script" id=1]
 [ext_resource path="res://Assets/Raw_assets/test_images/avatar_test.jpg" type="Texture" id=2]
 
-
 [node name="Playerlist" type="PanelContainer"]
 modulate = Color( 1, 1, 1, 0.737255 )
 margin_right = 170.0
-margin_bottom = 138.0
+margin_bottom = 131.0
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -17,7 +16,6 @@ __meta__ = {
 margin_left = 7.0
 margin_top = 7.0
 margin_right = 163.0
-margin_bottom = 131.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
