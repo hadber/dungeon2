@@ -5,7 +5,6 @@ var LOBBY_INVITE_ARG = false
 var lobby_changed:bool = false
 var members_downloaded = 0
 
-
 signal lobby_members_changed
 
 func _input(_event):
@@ -36,7 +35,7 @@ func _ready():
 # warning-ignore:return_value_discarded
 	Steam.connect("p2p_session_connect_fail", self, "_on_P2P_Session_Connect_Fail")
 	
-#	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
+	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
 #	Steam.connect("lobby_message", self, "_on_Lobby_Message")
 #	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update")
 
@@ -53,7 +52,7 @@ func _check_Command_Line():
 
 		# Loop through them and get the useful ones
 		for ARGUMENT in ARGUMENTS:
-			print("Command line: "+str(ARGUMENT))
+			print("Command line: " + str(ARGUMENT))
 
 			# An invite argument was passed
 			if LOBBY_INVITE_ARG:
@@ -104,6 +103,15 @@ func _on_Lobby_Joined(lobbyID, _permissions, _locked, _response):
 	Global.ChatNode.add_chat("Joined lobby " + str(lobbyID))
 	# Make the initial handshake
 	_make_P2P_Handshake()
+
+func _on_Lobby_Join_Requested(lobbyID, friendID):
+	
+	# Get the lobby owner's name
+	var OWNER_NAME = Steam.getFriendPersonaName(friendID)
+	print("Joining " + str(OWNER_NAME) + "'s lobby...")
+	Global.isPlayerHost = false
+	# Attempt to join the lobby
+	_join_Lobby(lobbyID)
 
 func _get_Lobby_Members():
 
