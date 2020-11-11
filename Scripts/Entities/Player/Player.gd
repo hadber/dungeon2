@@ -42,3 +42,5 @@ func _physics_process(delta):
 			sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
 			$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)
 
+func test_func():
+	print('test')

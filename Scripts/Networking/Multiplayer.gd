@@ -25,8 +25,11 @@ func _read_P2P_Packet():
 		#var PACKET_CODE = str(PACKET.data[0])
 
 		# Make the packet data readable
-		var _READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
+		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
 
+		
+		if READABLE.get("from") != null:
+			Global.PLAYERS[READABLE["from"]].test_func()
 		# Print the packet to output
 		#print("Packet: " + str(READABLE))
 
@@ -56,7 +59,7 @@ func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
 		Player2.get_node("CenterContainer/Name").text = CHANGER
 		Player2.get_node("Sprite").modulate = Color("#0000ff")
 		get_parent().add_child(Player2)
-		Global.PLAYERS.append(Player2)
+		Global.PLAYERS[str(makingChangeID)] = Player2
 
 	# Else if a player has left the lobby
 	elif chatState == 2:
@@ -79,9 +82,10 @@ func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
 		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
 
 func _on_Lobby_members_changed():
-	for player in Global.PLAYERS:
-		if not Global.NAMES.has(player.get_node("CenterContainer/Name").text):
-			pass # fix it later lol
+	pass
+	#for player in Global.PLAYERS:
+	#	if not Global.NAMES.has(player.get_node("CenterContainer/Name").text):
+	#		pass # fix it later lol
 			#player.queue_free()
 			#Global.PLAYERS.erase(player)
 # Called every frame. 'delta' is the elapsed time since the previous frame.

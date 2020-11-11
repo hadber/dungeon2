@@ -150,7 +150,6 @@ func _make_P2P_Handshake():
 	_send_P2P_Packet(lDATA, 2, 0)
 
 func _on_Lobby_Chat_Update(_lobbyID, _changedID, _makingChangeID, _chatState):
-
 	# Update the lobby now that a change has occurred
 	_get_Lobby_Members()
 
