@@ -16,7 +16,8 @@ func _input(_event):
 	pass
 
 func _process(_delta):
-	_read_P2P_Packet()
+	pass
+#	_read_P2P_Packet()
 
 func _ready():
 	

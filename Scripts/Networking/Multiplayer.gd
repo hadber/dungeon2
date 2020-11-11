@@ -32,6 +32,7 @@ func _read_P2P_Packet():
 
 		if READABLE.has("from"):
 			if Global.PLAYERS.has(str(READABLE["from"])):
+				pass
 				Global.PLAYERS.get(str(READABLE["from"])).test_func()
 		#if Global.PLAYERS.has(str(playerID)):
 		#	Global.PLAYERS.get(str(playerID)).queue_free()
