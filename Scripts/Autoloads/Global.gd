@@ -9,6 +9,7 @@ var STEAM_LOBBY_ID = 0
 var NAMES = {}
 var ChatNode
 var isPlayerHost:bool
+var PLAYERS = []
 #var OWNED = Steam.isSubscribed()
 
 func _ready():

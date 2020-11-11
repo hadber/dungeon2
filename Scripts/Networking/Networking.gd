@@ -156,8 +156,9 @@ func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
 
 	# If a player has joined the lobby
 	if chatState == 1:
-		print(str(CHANGER)+" has joined the lobby.")
+		print(str(CHANGER) + " has joined the lobby.")
 		Global.ChatNode.add_chat(str(CHANGER) + " has joined the game.")
+		$"..".spawn_new_player(makingChangeID)
 
 	# Else if a player has left the lobby
 	elif chatState == 2:
@@ -232,8 +233,6 @@ func _on_P2P_Session_Request(remoteID):
 		print("Rejected P2P session with " + str(REQUESTER))
 	
 	# Make the initial handshake
-
-
 
 func _read_P2P_Packet():
 
