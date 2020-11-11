@@ -14,7 +14,9 @@ onready var animationPlayer = $AnimationPlayer
 #func _process(_delta):
 
 func _ready(): # once node entered tree
+	randomize()
 	var rng = RandomNumberGenerator.new()
+	rng.randomize()
 	var randx = rng.randf_range(150.0, 750.0)
 	var randy = rng.randf_range(125.0, 450.0)
 	print("random start: (" + str(randx) + "," + str(randy) + ")")
@@ -31,16 +33,19 @@ func _physics_process(delta):
 		if input_vector != Vector2.ZERO:
 			animationPlayer.play("Run")
 			velocity = velocity.move_toward(input_vector * MAX_SPEED, ACCELERATION * delta)
+			
+			if not Global.isPlayerHost:
+				var sendVector = PoolByteArray()
+				sendVector.append(256)
+				sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
+				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)
+			
 		else:
 			animationPlayer.play("Idle")
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
 		
 		velocity = move_and_slide(velocity)
-		if not Global.isPlayerHost:
-			var sendVector = PoolByteArray()
-			sendVector.append(256)
-			sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
-			$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)
+
 
 func test_func():
 	print('test')

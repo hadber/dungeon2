@@ -8,6 +8,9 @@ func _ready():
 	# warning-ignore:return_value_discarded
 	Steam.connect("lobby_chat_update", self, "_on_Lobby_Chat_Update")
 	
+func _process(_delta):
+	_read_P2P_Packet()
+	
 func _read_P2P_Packet():
 
 	var PACKET_SIZE = Steam.getAvailableP2PPacketSize(0)
@@ -27,7 +30,9 @@ func _read_P2P_Packet():
 		# Make the packet data readable
 		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
 
-		print(READABLE)
+		if READABLE.has("from"):
+			if Global.PLAYERS.has(str(READABLE["from"])):
+				Global.PLAYERS.get(str(READABLE["from"])).test_func()
 		#if Global.PLAYERS.has(str(playerID)):
 		#	Global.PLAYERS.get(str(playerID)).queue_free()
 		# Print the packet to output
@@ -45,6 +50,7 @@ func _send_P2P_Packet(data, send_type, channel):
 			if MEMBER['steam_id'] != Global.STEAM_ID:
 				# warning-ignore:return_value_discarded
 				Steam.sendP2PPacket(MEMBER['steam_id'], data, send_type, channel)
+				print('sending package' + str(data))
 
 func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
 
