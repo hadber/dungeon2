@@ -13,11 +13,7 @@ func _ready():
 	self.add_child(Player1)
 	Global.PLAYERS.append(Player1)
 
-func spawn_new_player(SteamID):
-	var Player2 = PlayerScene.instance()
-	Player2.get_node("CenterContainer/Name").text = Steam.getFriendPersonaName(SteamID)
-	self.add_child(Player2)
-	Global.PLAYERS.append(Player2)
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass

@@ -149,36 +149,7 @@ func _make_P2P_Handshake():
 	lDATA.append_array(var2bytes({"message":"handshake", "from":Global.STEAM_ID}))
 	_send_P2P_Packet(lDATA, 2, 0)
 
-func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
-
-	# Get the user who has made the lobby change
-	var CHANGER = Steam.getFriendPersonaName(makingChangeID)
-
-	# If a player has joined the lobby
-	if chatState == 1:
-		print(str(CHANGER) + " has joined the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has joined the game.")
-		$"..".spawn_new_player(makingChangeID)
-
-	# Else if a player has left the lobby
-	elif chatState == 2:
-		print(str(CHANGER)+" has left the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has left the game.")
-
-	# Else if a player has been kicked
-	elif chatState == 8:
-		print(str(CHANGER)+" has been kicked from the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has been kicked from the lobby.")
-
-	# Else if a player has been banned
-	elif chatState == 16:
-		print(str(CHANGER)+" has been banned from the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has been banned from the lobby.")
-
-	# Else there was some unknown change
-	else:
-		print(str(CHANGER)+" did... something.")
-		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
+func _on_Lobby_Chat_Update(_lobbyID, _changedID, _makingChangeID, _chatState):
 
 	# Update the lobby now that a change has occurred
 	_get_Lobby_Members()
