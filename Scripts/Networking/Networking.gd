@@ -221,10 +221,10 @@ func _read_P2P_Packet():
 		#var PACKET_CODE = str(PACKET.data[0])
 
 		# Make the packet data readable
-		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
+		var _READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
 
 		# Print the packet to output
-		print("Packet: " + str(READABLE))
+		#print("Packet: " + str(READABLE))
 
 		# Append logic here to deal with packet data
 

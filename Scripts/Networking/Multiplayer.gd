@@ -27,9 +27,9 @@ func _read_P2P_Packet():
 		# Make the packet data readable
 		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
 
-		
-		if READABLE.get("from") != null:
-			Global.PLAYERS[READABLE["from"]].test_func()
+		print(READABLE)
+		#if Global.PLAYERS.has(str(playerID)):
+		#	Global.PLAYERS.get(str(playerID)).queue_free()
 		# Print the packet to output
 		#print("Packet: " + str(READABLE))
 
@@ -65,21 +65,27 @@ func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
 	elif chatState == 2:
 		print(str(CHANGER) + " has left the lobby.")
 		Global.ChatNode.add_chat(str(CHANGER) + " has left the game.")
-
+		remove_player(makingChangeID)
 	# Else if a player has been kicked
 	elif chatState == 8:
 		print(str(CHANGER) + " has been kicked from the lobby.")
 		Global.ChatNode.add_chat(str(CHANGER) + " has been kicked from the lobby.")
-
+		remove_player(makingChangeID)
 	# Else if a player has been banned
 	elif chatState == 16:
 		print(str(CHANGER)+" has been banned from the lobby.")
 		Global.ChatNode.add_chat(str(CHANGER) + " has been banned from the lobby.")
-
+		remove_player(makingChangeID)
 	# Else there was some unknown change
 	else:
 		print(str(CHANGER)+" did... something.")
 		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
+
+func remove_player(playerID):
+	if Global.PLAYERS.has(str(playerID)):
+		Global.PLAYERS.get(str(playerID)).queue_free()
+		Global.PLAYERS.erase(str(playerID))
+
 
 func _on_Lobby_members_changed():
 	pass
