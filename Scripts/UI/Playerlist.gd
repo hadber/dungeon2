@@ -3,6 +3,7 @@ extends Control
 func _unhandled_input(event):
 	if event.is_action_pressed("show_playerlist"):
 		self.visible = true
+		print(Steam.getNumLobbyMembers(Global.STEAM_LOBBY_ID))
 	elif event.is_action_released("show_playerlist"):
 		self.visible = false
 
@@ -19,7 +20,7 @@ func _ready():
 	# connect it to the signal so that only when there are changes to the lobby
 	# members (eg someone leaves or joins), the list is updated
 	# warning-ignore:return_value_discarded
-	$"../Networking".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
+	$"../Multiplayer".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
 
 func _on_Lobby_members_changed(): # triggered when someones leaves/joins the lobby
 	

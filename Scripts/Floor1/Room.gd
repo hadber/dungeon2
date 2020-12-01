@@ -10,7 +10,7 @@ const PlayerScene = preload("res://Scenes/Player.tscn")
 func _ready():
 	var Player1 = PlayerScene.instance()
 	Player1.get_node("CenterContainer/Name").text = Steam.getFriendPersonaName(Global.STEAM_ID)
-	self.add_child(Player1)
+	self.add_child_below_node($ball_text, Player1)
 	Global.PLAYERS["host"] = Player1
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

@@ -34,18 +34,15 @@ func _physics_process(delta):
 			animationPlayer.play("Run")
 			velocity = velocity.move_toward(input_vector * MAX_SPEED, ACCELERATION * delta)
 			
-			if not Global.isPlayerHost:
-				var sendVector = PoolByteArray()
-				sendVector.append(256)
-				sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
-				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)
-			
 		else:
 			animationPlayer.play("Idle")
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
+
+		if not Global.isPlayerHost:
+				var sendVector = PoolByteArray()
+				sendVector.append(256)
+				sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
+				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)		
 		
 		velocity = move_and_slide(velocity)
 
-
-func test_func():
-	print('test')
