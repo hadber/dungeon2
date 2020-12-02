@@ -16,7 +16,8 @@ _global_script_class_icons={
 [application]
 
 config/name="Dungeon 2"
-run/main_scene="res://Scenes/Room.tscn"
+run/main_scene="res://Scenes/MainMenu.tscn"
+config/icon="res://Assets/Raw_assets/icon/icon.png"
 
 [autoload]
 

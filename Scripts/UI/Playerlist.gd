@@ -3,7 +3,6 @@ extends Control
 func _unhandled_input(event):
 	if event.is_action_pressed("show_playerlist"):
 		self.visible = true
-		print(Steam.getNumLobbyMembers(Global.STEAM_LOBBY_ID))
 	elif event.is_action_released("show_playerlist"):
 		self.visible = false
 
