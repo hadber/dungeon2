@@ -26,6 +26,7 @@ Global="*res://Scripts/Autoloads/Global.gd"
 [display]
 
 window/size/width=900
+window/size/resizable=false
 
 [gdnative]
 

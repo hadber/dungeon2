@@ -18,3 +18,5 @@ func _process(_delta):
 			go_left = true
 	background.position.x = x
  
+func _ready():
+	$lVersion.text = Global.version
