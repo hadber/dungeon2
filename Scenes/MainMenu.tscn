@@ -26,7 +26,7 @@ animations = [ {
 [sub_resource type="DynamicFontData" id=2]
 font_path = "res://Assets/Fonts/pixel-operator/PixelOperator-Bold.ttf"
 
-[sub_resource type="DynamicFont" id=4]
+[sub_resource type="DynamicFont" id=3]
 size = 96
 outline_size = 6
 outline_color = Color( 0, 0, 0, 1 )
@@ -49,7 +49,7 @@ modulate = Color( 1, 1, 1, 0.47451 )
 position = Vector2( 340, 318.586 )
 frames = SubResource( 1 )
 animation = "menuloop"
-frame = 3
+frame = 8
 speed_scale = 1.5
 playing = true
 
@@ -97,7 +97,7 @@ custom_constants/separation = 15
 [node name="lTitle" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer"]
 margin_right = 543.0
 margin_bottom = 96.0
-custom_fonts/font = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
 custom_colors/font_color = Color( 0.737255, 0.407843, 0.407843, 1 )
 text = "META DUNGEON"
 

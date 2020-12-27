@@ -181,7 +181,6 @@ func _leave_Lobby():
 			# warning-ignore:return_value_discarded
 			Steam.closeP2PSessionWithUser(MEMBERS['steam_id'])
 		
-		
 		# Clear the local lobby list
 		Global.LOBBY_MEMBERS.clear()
 		Global.NAMES.clear()
@@ -280,7 +279,7 @@ func remove_player(playerID):
 
 func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
 
-	Global.ChatNode.add_chat("P2P session connection failed, check the log for more info...")
+	Global.ChatNode.add_chat("P2P session connection failed, check the log for more info.")
 	# If no error was given
 	if session_error == 0:
 		print("WARNING: Session failure with " + str(lobbyID) + " [no error given].")

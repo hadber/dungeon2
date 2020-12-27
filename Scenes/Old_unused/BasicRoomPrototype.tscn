@@ -1,0 +1,175 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://Scripts/Rooms/MultiplayerLobby.gd" type="Script" id=1]
+[ext_resource path="res://Scripts/zold_scripts/Walls.gd" type="Script" id=2]
+[ext_resource path="res://Assets/RoomAssets/landing_room.png" type="Texture" id=3]
+[ext_resource path="res://Assets/RoomAssets/door.png" type="Texture" id=4]
+
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 50, 30 )
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 200, 50 )
+
+[sub_resource type="RectangleShape2D" id=3]
+extents = Vector2( 50, 50 )
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 30, 40 )
+
+[sub_resource type="RectangleShape2D" id=5]
+extents = Vector2( 50, 80 )
+
+[sub_resource type="RectangleShape2D" id=6]
+extents = Vector2( 50, 40 )
+
+[sub_resource type="RectangleShape2D" id=7]
+extents = Vector2( 15, 40 )
+
+[node name="BasicRoomPrototype" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="room_sprite" type="Sprite" parent="."]
+position = Vector2( 450, 300 )
+scale = Vector2( 10, 10 )
+texture = ExtResource( 3 )
+
+[node name="Walls" type="Node2D" parent="."]
+script = ExtResource( 2 )
+
+[node name="up" type="StaticBody2D" parent="Walls"]
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door" type="Area2D" parent="Walls/up"]
+position = Vector2( 450, 40 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door_sprite" type="Sprite" parent="Walls/up/door"]
+position = Vector2( 0, 35 )
+scale = Vector2( 10, 10 )
+texture = ExtResource( 4 )
+
+[node name="door_area" type="CollisionShape2D" parent="Walls/up/door"]
+shape = SubResource( 1 )
+
+[node name="left" type="CollisionShape2D" parent="Walls/up"]
+position = Vector2( 200, 50 )
+shape = SubResource( 2 )
+
+[node name="right" type="CollisionShape2D" parent="Walls/up"]
+position = Vector2( 700, 50 )
+shape = SubResource( 2 )
+
+[node name="mid" type="CollisionShape2D" parent="Walls/up"]
+position = Vector2( 450, 50 )
+shape = SubResource( 3 )
+
+[node name="down" type="StaticBody2D" parent="Walls"]
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door" type="Area2D" parent="Walls/down"]
+position = Vector2( 450, 560 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door_sprite" type="Sprite" parent="Walls/down/door"]
+position = Vector2( 0, -35 )
+rotation = 3.14159
+scale = Vector2( 10, 10 )
+texture = ExtResource( 4 )
+
+[node name="door_area" type="CollisionShape2D" parent="Walls/down/door"]
+shape = SubResource( 1 )
+
+[node name="left" type="CollisionShape2D" parent="Walls/down"]
+position = Vector2( 200, 550 )
+shape = SubResource( 2 )
+
+[node name="right" type="CollisionShape2D" parent="Walls/down"]
+position = Vector2( 700, 550 )
+shape = SubResource( 2 )
+
+[node name="mid" type="CollisionShape2D" parent="Walls/down"]
+position = Vector2( 450, 550 )
+shape = SubResource( 3 )
+
+[node name="left" type="StaticBody2D" parent="Walls"]
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door" type="Area2D" parent="Walls/left"]
+position = Vector2( 40, 300 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door_sprite" type="Sprite" parent="Walls/left/door"]
+position = Vector2( 35, 0 )
+rotation = -1.5708
+scale = Vector2( 10, 10 )
+texture = ExtResource( 4 )
+
+[node name="door_area" type="CollisionShape2D" parent="Walls/left/door"]
+shape = SubResource( 4 )
+
+[node name="up" type="CollisionShape2D" parent="Walls/left"]
+position = Vector2( 50, 180 )
+shape = SubResource( 5 )
+
+[node name="down" type="CollisionShape2D" parent="Walls/left"]
+position = Vector2( 50, 420 )
+shape = SubResource( 5 )
+
+[node name="mid" type="CollisionShape2D" parent="Walls/left"]
+position = Vector2( 50, 300 )
+shape = SubResource( 6 )
+
+[node name="right" type="StaticBody2D" parent="Walls"]
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door" type="Area2D" parent="Walls/right"]
+position = Vector2( 860, 300 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="door_sprite" type="Sprite" parent="Walls/right/door"]
+position = Vector2( -35.0001, 0 )
+rotation = 1.5708
+scale = Vector2( 10, 10 )
+texture = ExtResource( 4 )
+
+[node name="door_area" type="CollisionShape2D" parent="Walls/right/door"]
+shape = SubResource( 4 )
+
+[node name="area" type="Area2D" parent="Walls/right/door"]
+
+[node name="area_col" type="CollisionShape2D" parent="Walls/right/door/area"]
+position = Vector2( -45, 0 )
+shape = SubResource( 7 )
+
+[node name="up" type="CollisionShape2D" parent="Walls/right"]
+visible = false
+position = Vector2( 850, 180 )
+shape = SubResource( 5 )
+
+[node name="down" type="CollisionShape2D" parent="Walls/right"]
+visible = false
+position = Vector2( 850, 420 )
+shape = SubResource( 5 )
+
+[node name="mid" type="CollisionShape2D" parent="Walls/right"]
+visible = false
+position = Vector2( 850, 300 )
+shape = SubResource( 6 )

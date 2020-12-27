@@ -42,7 +42,7 @@ func _physics_process(delta):
 				var sendVector = PoolByteArray()
 				sendVector.append(256)
 				sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
-				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)		
+#				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)		
 		
 		velocity = move_and_slide(velocity)
 
