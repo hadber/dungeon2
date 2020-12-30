@@ -11,7 +11,7 @@ var ChatNode
 var isPlayerHost:bool
 var PLAYERS = {}
 #var OWNED = Steam.isSubscribed()
-var version = 'ver 0.1.1'
+var version = 'ver 0.1.3'
 
 
 func _ready():

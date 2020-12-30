@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://Scripts/Rooms/MultiplayerLobby.gd" type="Script" id=1]
+[ext_resource path="res://Scripts/Rooms/BasicRoomPrototype/BasicRoomPrototype.gd" type="Script" id=1]
 [ext_resource path="res://Assets/RoomAssets/landing_room.png" type="Texture" id=3]
 
 [sub_resource type="RectangleShape2D" id=1]

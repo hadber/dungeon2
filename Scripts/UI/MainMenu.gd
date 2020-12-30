@@ -31,9 +31,10 @@ func _ready():
 func _btOnPlayPressed():
 	print("Start the game (go to the main area)")
 	# warning-ignore:return_value_discarded
-	var ret = get_tree().change_scene("res://Scenes/Room.tscn") # test scene
+	var ret = get_tree().change_scene("res://Scenes/RoomTypes/LandingRoom.tscn") # test scene
+#	gWorld.spawn_player(Vector2(450, 450))
 	if(ret == OK):
-		print('test')
+		print('Changing scenes worked')
 	
 func _btOnOptionsPressed():
 	print("No options at the moment :( (sorry!)")

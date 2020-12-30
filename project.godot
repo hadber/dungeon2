@@ -23,6 +23,7 @@ config/icon="res://Assets/Raw_assets/icon/icon.png"
 [autoload]
 
 Global="*res://Scripts/Autoloads/Global.gd"
+gWorld="*res://Scripts/Autoloads/World.gd"
 
 [display]
 

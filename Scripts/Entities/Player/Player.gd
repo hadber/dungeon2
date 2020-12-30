@@ -1,8 +1,8 @@
 extends KinematicBody2D
 
-var MAX_SPEED = 400
-var ACCELERATION = 2500
-var FRICTION = 2500
+const MAX_SPEED = 400
+const ACCELERATION = 2500
+const FRICTION = 2500
 var velocity = Vector2()
 
 onready var animationPlayer = $AnimationPlayer
@@ -13,15 +13,15 @@ onready var animationPlayer = $AnimationPlayer
 #	update()
 #func _process(_delta):
 
-func _ready(): # once node entered tree
-	randomize()
-	var rng = RandomNumberGenerator.new()
-	rng.randomize()
-	var randx = rng.randf_range(150.0, 750.0)
-	var randy = rng.randf_range(125.0, 450.0)
-	print("random start: (" + str(randx) + "," + str(randy) + ")")
-	position = Vector2(randx, randy)
+func spawn_me(where:Vector2):
+	print("Trying to spawn at:", where)
+	position = where
+	pass
 
+func _ready(): # once node entered tree
+	spawn_me(gWorld.spawn_side)
+	pass
+	
 func _physics_process(delta):
 
 	if not Global.in_dialogue:
@@ -37,12 +37,13 @@ func _physics_process(delta):
 		else:
 			animationPlayer.play("Idle")
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
-
+		velocity = move_and_slide(velocity)
+"""
 		if not Global.isPlayerHost:
 				var sendVector = PoolByteArray()
 				sendVector.append(256)
 				sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
 #				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)		
+"""
 		
-		velocity = move_and_slide(velocity)
 

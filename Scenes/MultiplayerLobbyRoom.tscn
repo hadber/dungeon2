@@ -1,13 +1,10 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Scripts/zold_scripts/Walls.gd" type="Script" id=1]
-[ext_resource path="res://Scripts/Rooms/MultiplayerLobby.gd" type="Script" id=2]
+[ext_resource path="res://Scripts/Rooms/BasicRoomPrototype/BasicRoomPrototype.gd" type="Script" id=2]
 [ext_resource path="res://Assets/RoomAssets/door.png" type="Texture" id=3]
 [ext_resource path="res://Assets/MultiplayerLobby/lobby_room.png" type="Texture" id=4]
 [ext_resource path="res://Assets/Fonts/pixel-operator/PixelOperator.ttf" type="DynamicFontData" id=5]
-
-
-
 
 [sub_resource type="DynamicFont" id=1]
 size = 26
