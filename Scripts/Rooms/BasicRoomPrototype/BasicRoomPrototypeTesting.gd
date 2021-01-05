@@ -31,8 +31,8 @@ func _ready():
 
 func create_room():
 	for tDoor in types:
-		var wall = $Walls.get_node(tDoor)
-		var midwall = wall.get_node("mid")
+#		var wall = $Walls.get_node(tDoor)
+#		var midwall = wall.get_node("mid")
 		
 		if tDoor in sDoors:
 			print("is in sDoors:", tDoor)
@@ -40,10 +40,10 @@ func create_room():
 			a_door.spawn(tDoor)
 			$Doors.add_child(a_door)
 			a_door.connect("player_entered", self, "on_player_entered_door")
-			midwall.set_deferred("disabled", true)
+#			midwall.set_deferred("disabled", true)
 		else:
 			print("is NOT in sDoors:", tDoor)
-			midwall.set_deferred("disabled", false)
+#			midwall.set_deferred("disabled", false)
 			
 func on_player_entered_door(which_side):
 	print(which_side)

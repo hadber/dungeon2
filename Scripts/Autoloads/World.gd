@@ -4,6 +4,8 @@ extends Node2D
 const PlayerScene = preload("res://Scenes/Player.tscn")
 var Player1
 var spawn_side:Vector2 = Vector2(450, 260)
+var WorldState = []
+
 
 func _ready():
 	Player1 = PlayerScene.instance()

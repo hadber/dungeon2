@@ -23,7 +23,8 @@ func _ready(): # once node entered tree
 	pass
 	
 func _physics_process(delta):
-
+	#gWorld.WorldState.append()
+	add_player_state()
 	if not Global.in_dialogue:
 		var input_vector = Vector2.ZERO
 		input_vector.x = Input.get_action_strength("right") - Input.get_action_strength("left")
@@ -46,4 +47,6 @@ func _physics_process(delta):
 #				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)		
 """
 		
-
+func add_player_state():
+	var player_state = {"T": OS.get_system_time_msecs(), "P": get_global_position()}
+	gWorld.WorldState.append(player_state)
