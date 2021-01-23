@@ -6,11 +6,8 @@ func _ready():
 	rooms["right"] = LobbyRoom
 	LobbyRoom.sDoors = ["left"]
 	LobbyRoom.rooms["left"] = self
+	LobbyRoom.create_room()
+	LobbyRoom.close_doors()
+#	LobbyRoom.open_doors()
 	create_room()
 	gWorld.Player1.spawn_me(gWorld.spawn_side)
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass

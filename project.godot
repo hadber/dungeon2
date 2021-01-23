@@ -25,6 +25,10 @@ config/icon="res://Assets/Raw_assets/icon/icon.png"
 Global="*res://Scripts/Autoloads/Global.gd"
 gWorld="*res://Scripts/Autoloads/World.gd"
 
+[debug]
+
+gdscript/warnings/return_value_discarded=false
+
 [display]
 
 window/size/width=1152

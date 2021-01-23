@@ -19,15 +19,22 @@ var rooms = { # populate with rooms further down the line
 	left = null
 } 
 
+var doors = {
+	up = null,
+	right = null,
+	down = null,
+	left = null
+}
+
 func _enter_tree():
 	if(gWorld.Player1 == null): # This is for debugging, if it has come to this, something bad probably happened
-		print("This is for debugging, if it has come to this, something bad probably happened")
+		print("This is supposed to happen only during debugging. If you are seeing this, something bad likely happened.")
 		gWorld.Player1 = gWorld.PlayerScene.instance()
 	add_child_below_node($Doors, gWorld.Player1)
 	gWorld.Player1.spawn_me(gWorld.spawn_side)
 
-func _ready():
-	create_room()
+#func _ready():
+#	create_room()
 
 func create_room():
 	for tDoor in types:
@@ -35,18 +42,16 @@ func create_room():
 		var midwall = wall.get_node("mid")
 		
 		if tDoor in sDoors:
-			print("is in sDoors:", tDoor)
 			var a_door = DoorScene.instance()
 			a_door.spawn(tDoor)
 			$Doors.add_child(a_door)
 			a_door.connect("player_entered", self, "on_player_entered_door")
 			midwall.set_deferred("disabled", true)
+			doors[tDoor] = a_door
 		else:
-			print("is NOT in sDoors:", tDoor)
 			midwall.set_deferred("disabled", false)
-			
+
 func on_player_entered_door(which_side):
-	print(which_side)
 	remove_child(gWorld.Player1)
 	
 	var root = get_tree().get_root()
@@ -56,6 +61,22 @@ func on_player_entered_door(which_side):
 	root.call_deferred("add_child", rooms[which_side])
 	gWorld.spawn_side = spawn_sides[which_side]
 #	var _ret = get_tree().change_scene_to(rooms[which_side]) # test scene
+
+func close_doors():
+	for tDoor in types:
+		var wall = $Walls.get_node(tDoor)
+		var midwall = wall.get_node("mid")
+		
+		if tDoor in sDoors:
+			midwall.set_deferred("disabled", false)
+			doors[tDoor].get_node("area").monitoring = false
+			
 	
-#	if _ret != OK:
-#		print("Couldn't change rooms for some reason...")
+func open_doors():
+	for tDoor in types:
+		var wall = $Walls.get_node(tDoor)
+		var midwall = wall.get_node("mid")
+		
+		if tDoor in sDoors:
+			midwall.set_deferred("disabled", true)
+			doors[tDoor].get_node("area").monitoring = true

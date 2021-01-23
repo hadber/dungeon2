@@ -10,11 +10,9 @@ onready var animationPlayer = $AnimationPlayer
 #func _draw(): # show the actual movement vector that's happening 
 #	draw_line(Vector2(0, 0), velocity/5, Color(1.0, 0.2, 0.5), 2.0)
 
-#	update()
-#func _process(_delta):
-
 func spawn_me(where:Vector2):
-	print("Trying to spawn at:", where)
+	# This function is called when a player enter a new room via a door
+	# Called by the door it enter through, to spawn in the new room
 	position = where
 	pass
 
@@ -39,14 +37,7 @@ func _physics_process(delta):
 			animationPlayer.play("Idle")
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
 		velocity = move_and_slide(velocity)
-"""
-		if not Global.isPlayerHost:
-				var sendVector = PoolByteArray()
-				sendVector.append(256)
-				sendVector.append_array(var2bytes({"message":input_vector, "from":Global.STEAM_ID}))
-#				$"../Multiplayer"._send_P2P_Packet(sendVector, 1, 0)		
-"""
-		
+
 func add_player_state():
 	var player_state = {"T": OS.get_system_time_msecs(), "P": get_global_position()}
 	gWorld.WorldState.append(player_state)

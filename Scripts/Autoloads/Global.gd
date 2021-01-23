@@ -1,30 +1,29 @@
 extends Node
 
-#var ONLINE = Steam.loggedOn()
-var STEAM_ID
-var STEAM_USERNAME
-var LOBBY_MEMBERS = []
-var in_dialogue = false
-var STEAM_LOBBY_ID = 0
-var NAMES = {}
-var ChatNode
+var gSteamID:int
+var gSteamUsername:String
+var lobbyMembers:Array = []
+var in_dialogue:bool = false
+var steamLobbyID:int = 0
+var lobbyMemberNames:Dictionary = {}
+var chatNode
 var isPlayerHost:bool
-var PLAYERS = {}
-#var OWNED = Steam.isSubscribed()
-var version = 'ver 0.1.3'
-
+var players = {}
+var version = 'ver 0.1.5a'
 
 func _ready():
 
-	var INIT = Steam.steamInit()
-	print("Steam init: " + str(INIT))
+	var SteamInit = Steam.steamInit()
+	print("Steam init: " + str(SteamInit))
 		
-	STEAM_ID = Steam.getSteamID()
-	STEAM_USERNAME = Steam.getFriendPersonaName(STEAM_ID)
+	gSteamID = Steam.getSteamID()
+	gSteamUsername = Steam.getFriendPersonaName(gSteamID)
 	
-	if INIT['status'] != 1:
-		print("Failed to initialize Steam. " + str(INIT['verbal']) + " Shutting down...")
-		get_tree().quit()
+	if SteamInit['status'] != 1:
+		print("Failed to initialize Steam. Reason: " + str(SteamInit['verbal']))
+	else:
+		if Steam.isSubscribed() == false: #game is not owned
+			print("Player might have the game pirated, do something here")
 
 func _process(_delta):
 	Steam.run_callbacks()

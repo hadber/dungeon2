@@ -1,347 +1,212 @@
 extends Node
 
-const PlayerScene = preload("res://Scenes/Player.tscn")
-const PlayerNetworkScript = preload("res://Scripts/Entities/Player/PlayerNetwork.gd")
-
-var DATA
-var LOBBY_INVITE_ARG = false
-var lobby_changed:bool = false
-var members_downloaded = 0
-
-signal lobby_members_changed
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	# warning-ignore:return_value_discarded
-	$"../Multiplayer".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
-	# warning-ignore:return_value_discarded
-	Steam.connect("lobby_chat_update", self, "_on_Lobby_Chat_Update")
-	# warning-ignore:return_value_discarded
-	Steam.connect("avatar_loaded", self, "loaded_avatar")
-	# warning-ignore:return_value_discarded
-	Steam.connect("lobby_created", self, "_on_Lobby_Created")
-	# warning-ignore:return_value_discarded
-	Steam.connect("lobby_joined", self, "_on_Lobby_Joined") 
-	# warning-ignore:return_value_discarded
-#	Steam.connect("lobby_invite", self, "_on_Lobby_Invite")
-	# warning-ignore:return_value_discarded
-	Steam.connect("p2p_session_request", self, "_on_P2P_Session_Request")
-	# warning-ignore:return_value_discarded
-	Steam.connect("p2p_session_connect_fail", self, "_on_P2P_Session_Connect_Fail")
+func _ready() -> void:
+	Steam.connect("lobby_created", self, "_on_lobby_created")
+	Steam.connect("lobby_joined", self, "_on_lobby_joined")
+	Steam.connect("lobby_chat_update", self, "_on_lobby_chat_update")
+#	Steam.connect("lobby_message", self, "_on_Lobby_Message") # a chat message has been sent
+#	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update") # the lobby metadata has changed
+#	Steam.connect("lobby_invite", self, "_on_Lobby_Invite") # get invited to lobby (steam UI takes care of it)
+	Steam.connect("join_requested", self, "_on_lobby_join_requested()")
+	Steam.connect("p2p_session_request", self, "_on_p2p_session_request")
+	Steam.connect("p2p_session_connect_fail", self, "_on_p2p_session_connect_fail")
 	
-	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
-#	Steam.connect("lobby_message", self, "_on_Lobby_Message")
-#	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update")
-	# Check for command line arguments
-	_check_Command_Line()
-	_create_Lobby()
+	_check_command_line()
+
+func _check_command_line(): 
+	# checks for command line arguments
+	# example: when you click "join lobby" in the steam friendslist
+	# it will launch the game with the command line argument "+connect_lobby lobbyid"
+	# we need to catch that case and process it 
+	var args = OS.get_cmdline_args()
+	var argLobbyInv:bool = false
 	
-func _process(_delta):
-	_read_P2P_Packet()
+	if args.size() > 0: # there are arguments to process
+		for arg in args:
+			print("cmdline arg: " + str(arg))
+			
+			if argLobbyInv:
+				_join_lobby(int(arg))
+			
+			if arg == "+connect_lobby":
+				argLobbyInv = true
+
+func process(_delta):
+	var packet = Steam.getAvailableP2PPacketSize(0)
 	
-func _check_Command_Line():
-	var ARGUMENTS = OS.get_cmdline_args()
+	for pack in packet:
+		_read_p2p_packet()
 
-	# There are arguments to process
-	if ARGUMENTS.size() > 0:
+func _create_lobby():
+	if Global.steamLobbyID == 0:
+		Steam.createLobby(1, 2)
+	else: 
+		print("ERROR: Failed to create lobby. Lobby already exists (ID: ", Global.steamLobbyID, ")")
 
-		# Loop through them and get the useful ones
-		for ARGUMENT in ARGUMENTS:
-			print("Command line: " + str(ARGUMENT))
-
-			# An invite argument was passed
-			if LOBBY_INVITE_ARG:
-				_join_Lobby(int(ARGUMENT))
-
-			# A Steam connection argument exists
-			if ARGUMENT == "+connect_lobby":
-				LOBBY_INVITE_ARG = true
-
-func _create_Lobby():
-	# Make sure a lobby is not already set
-	if Global.STEAM_LOBBY_ID == 0:
-		Steam.createLobby(1, 2) 
-
-func _on_Lobby_Created(connect, lobbyID):
-	if connect == 1:
-		# Set the lobby ID
-		Global.STEAM_LOBBY_ID = lobbyID
-		print("Created a lobby: "+str(Global.STEAM_LOBBY_ID))
-		Global.isPlayerHost = true
-		# Set some lobby data
-#		Steam.setLobbyData(lobbyID, "name", "Gramps' Lobby")
-#		Steam.setLobbyData(lobbyID, "mode", "GodotSteam test")
-
-		# Allow P2P connections to fallback to being relayed through Steam if needed
-		var RELAY = Steam.allowP2PPacketRelay(true)
-		print("Allowing Steam to be relay backup: "+str(RELAY))
-
-func _join_Lobby(lobbyID):
-	print("Attempting to join lobby " + str(lobbyID) + "...")
+func _on_lobby_created(connect: int, lobbyID: int):
 	
-	# Clear any previous lobby members lists, if you were in a previous lobby
-	Global.LOBBY_MEMBERS.clear()
+	if connect == 1: # k_EResultOK - The lobby was successfully created.
+		print("SUCCESS: The lobby was successfully created. (ID: ", lobbyID ,")")
+		Global.steamLobbyID = lobbyID
+		
+		#Setting lobby data
+		Steam.setLobbyData(lobbyID, "title", "Meta Dungeon (%s) test lobby" % Global.version)
+		
+		var allowRelay = Steam.allowP2PPacketRelay(true)
+		print("Allowing P2P packet relay: " + str(allowRelay))
+		
+	elif connect == 2: # k_EResultFail - The server responded, but with an unknown internal error.
+		print("ERROR: The server responded, but with an unknown internal error.")
+	elif connect == 16: # k_EResultTimeout - The message was sent to the Steam servers, but it didn't respond.
+		print("ERROR: The message was sent to the Steam servers, but it didn't respond.")
+	elif connect == 25: # k_EResultLimitExceeded - Your game client has created too many lobbies and is being rate limited.
+		print("ERROR: Your game client has created too many lobbies and is being rate limited.")
+	elif connect == 15: # k_EResultAccessDenied - Your game isn't set to allow lobbies, or your client does haven't rights to play the game
+		print("ERROR: Your game isn't set to allow lobbies, or your client does haven't rights to play the game")
+	elif connect == 3: # k_EResultNoConnection - Your Steam client doesn't have a connection to the back-end.
+		print("ERROR: Your Steam client doesn't have a connection to the back-end.")
 
-	# Make the lobby join request to Steam
+func _join_lobby(lobbyID:int):
+	print("Joining lobby " + str(lobbyID))
+	
+	# just in case, clear previous members list
+	# if it just so happens this is not your first lobby
+	Global.lobbyMembers.clear()
+	
+	# request to join the lobby
+	# calls _on_lobby_joined() on success
 	Steam.joinLobby(lobbyID)
 
-func _on_Lobby_Joined(lobbyID, _permissions, _locked, _response):
-	
-	# Set this lobby ID as your lobby ID
-	Global.STEAM_LOBBY_ID = lobbyID
-	
-	# Get the lobby members
-	_get_Lobby_Members()
-	Global.ChatNode.add_chat("Joined lobby " + str(lobbyID))
-	# Make the initial handshake
-	_make_P2P_Handshake()
-
-func _on_Lobby_Join_Requested(lobbyID, friendID):
-	
-	# Get the lobby owner's name
-	var OWNER_NAME = Steam.getFriendPersonaName(friendID)
-	print("Joining " + str(OWNER_NAME) + "'s lobby...")
-	Global.isPlayerHost = false
-	# Attempt to join the lobby
-	_join_Lobby(lobbyID)
-
-func _get_Lobby_Members():
-	print("getting lobby members")
-	# Clear your previous lobby list
-	Global.LOBBY_MEMBERS.clear()
-	Global.NAMES.clear()
-
-	# Get the number of members from this lobby from Steam
-	var MEMBERS = Steam.getNumLobbyMembers(Global.STEAM_LOBBY_ID)
-	print(MEMBERS)
-
-	# Get the data of these players from Steam
-	for MEMBER in range(0, MEMBERS):
-
-		# Get the member's Steam ID
-		var MEMBER_STEAM_ID = Steam.getLobbyMemberByIndex(Global.STEAM_LOBBY_ID, MEMBER)
-
-		# Get the member's Steam name
-		var MEMBER_STEAM_NAME = Steam.getFriendPersonaName(MEMBER_STEAM_ID)
-
-		# Add them to the list
-		Global.LOBBY_MEMBERS.append({"steam_id":MEMBER_STEAM_ID, "steam_name":MEMBER_STEAM_NAME})
-		Global.NAMES[MEMBER_STEAM_ID] = MEMBER_STEAM_NAME
-		Steam.getPlayerAvatar(1, MEMBER_STEAM_ID) # [1 - 3], SMALL to LARGE
+func _leave_lobby():
+	if Global.steamLobbyID != 0: # player is currently in a lobby
 		
-		if MEMBER_STEAM_ID != Global.STEAM_ID:
-			var Player2 = PlayerScene.instance()
-			Player2.get_node("CenterContainer/Name").text = MEMBER_STEAM_NAME
-			Player2.get_node("Sprite").modulate = Color("#0000ff")
-			Player2.set_script(PlayerNetworkScript)
-			get_parent().add_child(Player2)
-			Global.PLAYERS[str(MEMBER_STEAM_ID)] = Player2
+		Steam.leaveLobby(Global.steamLobbyID)
+		Global.steamLobbyID = 0
 		
-		# apparently Steam.getSmallFriendAvatar does not seem to work, or at least
-		# I'm not entirely sure how it works
-		# Needs further testing, but so far it works like this aswell!
+		for member in Global.lobbyMembers:
+			Steam.closeP2PSessionWithUser(member['steam_id'])
 		
-	lobby_changed = true
+		Global.lobbyMembers.clear()
+	else: # player is not part of any lobby - how did we get to this point?
+		print("What are you trying to do? You are not part of any lobby! (perhaps an error occured?)")
 
-func _on_Send_Chat_pressed():
-
-	# Get the entered chat message
-	var MESSAGE = $Chat.get_text()
-
-	# Pass the message to Steam
-	var SENT = Steam.sendLobbyChatMsg(Global.STEAM_LOBBY_ID, MESSAGE)
-
-	# Was it sent successfully?
-	if not SENT:
-		print("ERROR: Chat message failed to send.")
-
-	# Clear the chat input
-	$Chat.clear()
-
-func _leave_Lobby():
-
-	# If in a lobby, leave it
-	if Global.STEAM_LOBBY_ID != 0:
-
-		# Send leave request to Steam
-		Steam.leaveLobby(Global.STEAM_LOBBY_ID)
-
-		# Wipe the Steam lobby ID then display the default lobby ID and player list title
-		Global.STEAM_LOBBY_ID = 0
-
-		if Global.isPlayerHost:
-			var sendVector = PoolByteArray()
-			sendVector.append(64)
-			sendVector.append_array(var2bytes({"message":"leaveLobbyPlease", "from":Global.STEAM_ID}))
-			_send_P2P_Packet(sendVector, 1, 0)
-
-		# Close session with all users
-		for MEMBERS in Global.LOBBY_MEMBERS:
-			# warning-ignore:return_value_discarded
-			Steam.closeP2PSessionWithUser(MEMBERS['steam_id'])
+func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int):
+	if _response == 1: # k_EChatRoomEnterResponseSuccess - the lobby was successfully joined
+		print("Successfully joined lobby (ID: %s)" % str(lobbyID)) 
+		Global.steamLobbyID = lobbyID
+		_get_lobby_members()
+		_make_p2p_handshake()
 		
-		# Clear the local lobby list
-		Global.LOBBY_MEMBERS.clear()
-		Global.NAMES.clear()
+	elif _response == 5: # k_EChatRoomEnterResponseError - the lobby join was unsuccesful
+		print("Failed joining lobby")
 
-func _on_P2P_Session_Request(remoteID):
+func _on_lobby_join_requested(lobbyID:int, friendID:int):
+	# triggered if the player is already in game and accepts a steam invite
+	# or clicks 'join game' in the friendlist to join a friend's game
+	print("Joining %s's lobby" % Steam.getFriendPersonaName(friendID))
 	
-	# Get the requester's name
-	var REQUESTER = Steam.getFriendPersonaName(remoteID)
+	# join the lobby normally
+	_join_lobby(lobbyID)
+
+func _get_lobby_members():
+	# clear the lobby members, we're in a new lobby now
+	Global.lobbyMembers.clear()
 	
-	# Accept the P2P session; can apply logic to deny this request if needed
-	if(Global.NAMES.has(remoteID)):
-		# warning-ignore:return_value_discarded
-		Steam.acceptP2PSessionWithUser(remoteID)
-		print("Accepted P2P session with " + str(REQUESTER))
-		_make_P2P_Handshake()
+	# get the number of lobby members
+	var totalMembers:int = Steam.getNumLobbyMembers(Global.steamLobbyID)
+	
+	# get the data on each of the members
+	for member in range(0, totalMembers):
+		# get their steam ID
+		var memberSteamID:int = Steam.getLobbyMemberByIndex(Global.steamLobbyID, member)
+		# get their steam name
+		var memberSteamName:String = Steam.getFriendPersonaName(memberSteamID)
+		# append them to the lobby members array
+		Global.lobbyMember.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
+
+func _make_p2p_handshake():
+	print("Sending a p2p handshake request to the lobby...")
+	_send_p2p_packet("all", {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
+
+func _read_p2p_packet():
+	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
+	
+	if packetSize > 0:
+		
+		# read the packet
+		var packet:Dictionary = Steam.readP2PPacket(packetSize, 0)
+		
+		# it shouldn't be empty if the size is nonzero!
+		if packet.empty():
+			print("EPIC FAIL: read an empty packet with non-zero size.")
+		
+		# remote sender information
+		var _senderID:String = str(packet.steamIDRemote)
+		var _packetCode:String = str(packet.data[0])
+		
+		var packetRead:PoolByteArray = bytes2var(packet.data.subarray(1, packetSize-1))
+		print("Read packet data: ", str(packetRead))
+
+func _send_p2p_packet(target:String, sendDict):
+	# send types
+	# 0 - unreliable, basic UDP send
+	# 1 - unreliable no delay, drop packets if no connection exists
+	# 2 - reliable message send, up to 1MB in a single message
+	# 3 - reliable with buffering (nagle algorithm)
+	
+	var sendType = 2
+	
+	var data:PoolByteArray = PoolByteArray()
+	data.append(256)
+	data.append_array(var2bytes(sendDict))
+	
+	if target == "all": # broadcast to all members
+		if Global.lobbyMembers.size() > 1:
+			for member in Global.lobbyMembers:
+				if member['steam_id'] != Global.gSteamID:
+					Steam.sendP2PPacket(member['steam_id'], data, sendType, 0)
 	else:
-		print("Rejected P2P session with " + str(REQUESTER))
-
-func _make_P2P_Handshake():
-
-	print("Sending P2P handshake to the lobby")
-	var lDATA = PoolByteArray()
-	lDATA.append(256)
-	lDATA.append_array(var2bytes({"message":"handshake", "from":Global.STEAM_ID}))
-	_send_P2P_Packet(lDATA, 2, 0)
-
-func _read_P2P_Packet():
-
-	var PACKET_SIZE = Steam.getAvailableP2PPacketSize(0)
-
-	# There is a packet
-	if PACKET_SIZE > 0:
-
-		var PACKET = Steam.readP2PPacket(PACKET_SIZE, 0)
-
-		if PACKET.empty():
-			print("WARNING: read an empty packet with non-zero size!")
-
-		# Get the remote user's ID
-		#var PACKET_ID = str(PACKET.steamIDRemote)
-		#var PACKET_CODE = str(PACKET.data[0])
-
-		# Make the packet data readable
-		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
-
-		if READABLE.has("from"):
-			if str(READABLE["message"]) == "leaveLobbyPlease":
-				_leave_Lobby()
-				Global.ChatNode.add_chat("Lobby leader disconnected, abandoning lobby...")
-			elif Global.PLAYERS.has(str(READABLE["from"])):
-				if str(READABLE["message"]) != "handshake":
-					Global.PLAYERS.get(str(READABLE["from"])).update_vector(READABLE["message"])
-
-func _send_P2P_Packet(data, send_type, channel):
+		Steam.sendP2PPacket(int(target), data, sendType, 0)
 	
-	if Global.LOBBY_MEMBERS.size() > 1:
+
+func _on_lobby_chat_update(_lobbyID:int, _changedID:int, makingChangeID:int, chatState:int):
+	var changerName:String = Steam.getFriendPersonaName(makingChangeID)
 	
-		for MEMBER in Global.LOBBY_MEMBERS:
-			if MEMBER['steam_id'] != Global.STEAM_ID:
-				# warning-ignore:return_value_discarded
-				Steam.sendP2PPacket(MEMBER['steam_id'], data, send_type, channel)
-
-func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
-
-	_get_Lobby_Members()
-
-	var CHANGER = Steam.getFriendPersonaName(makingChangeID)
-	if chatState == 1:
-		print(str(CHANGER) + " has joined the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has joined the game.")
-
-	# Else if a player has left the lobby
-	elif chatState == 2:
-		print(str(CHANGER) + " has left the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has left the game.")
-		remove_player(makingChangeID)
-	# Else if a player has been kicked
-	elif chatState == 8:
-		print(str(CHANGER) + " has been kicked from the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has been kicked from the lobby.")
-		remove_player(makingChangeID)
-	# Else if a player has been banned
-	elif chatState == 16:
-		print(str(CHANGER)+" has been banned from the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has been banned from the lobby.")
-		remove_player(makingChangeID)
-	# Else there was some unknown change
-	else:
-		print(str(CHANGER)+" did... something.")
-		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
-
-func remove_player(playerID):
-	if Global.PLAYERS.has(str(playerID)):
-		Global.PLAYERS.get(str(playerID)).queue_free()
-		Global.PLAYERS.erase(str(playerID))
-
-func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
-
-	Global.ChatNode.add_chat("P2P session connection failed, check the log for more info.")
-	# If no error was given
-	if session_error == 0:
-		print("WARNING: Session failure with " + str(lobbyID) + " [no error given].")
-
-	# Else if target user was not running the same game
-	elif session_error == 1:
-		print("WARNING: Session failure with " + str(lobbyID) + " [target user not running the same game].")
-
-	# Else if local user doesn't own app / game
-	elif session_error == 2:
-		print("WARNING: Session failure with " + str(lobbyID) + " [local user doesn't own app / game].")
-
-	# Else if target user isn't connected to Steam
-	elif session_error == 3:
-		print("WARNING: Session failure with " + str(lobbyID) + " [target user isn't connected to Steam].")
-
-	# Else if connection timed out
-	elif session_error == 4:
-		print("WARNING: Session failure with " + str(lobbyID) + " [connection timed out].")
-
-	# Else if unused
-	elif session_error == 5:
-		print("WARNING: Session failure with " + str(lobbyID) + " [unused].")
-
-	# Else no known error
-	else:
-		print("WARNING: Session failure with " + str(lobbyID) + " [unknown error " + str(session_error) + "].")
-
-func loaded_avatar(id, size, buffer):
-
-	var AVATAR = Image.new()
-	var AVATAR_TEXTURE = ImageTexture.new()
-	AVATAR.create(size, size, false, Image.FORMAT_RGBAF)
-
-	AVATAR.lock()
-	for y in range(0, size):
-		for x in range(0, size):
-			var pixel = 4 * (x + y * size)
-			var r = float(buffer[pixel]) / 255
-			var g = float(buffer[pixel+1]) / 255
-			var b = float(buffer[pixel+2]) / 255
-			var a = float(buffer[pixel+3]) / 255
-			AVATAR.set_pixel(x, y, Color(r, g, b, a)) 
-	AVATAR.unlock()
-
-	AVATAR_TEXTURE.create_from_image(AVATAR)
+	if chatState == 1: # player has joined the lobby
+		print(changerName, " has joined the lobby.")
+	if chatState == 2: # player has left the lobby
+		print(changerName, " has left the lobby.")
+	if chatState == 8: # player has been kicked? - tbh this isnt even implemented in the steamworks backend
+		print(changerName, " has been kicked from the lobby.")
+	if chatState == 16: # player has been banned
+		print(changerName, " has been banned from the lobby.")
+	else: # unknown thing happened to player
+		print("Unknown change has occured for ", changerName)
 	
-	for MEMBER in Global.LOBBY_MEMBERS:
-		if MEMBER['steam_id'] == id:
-			MEMBER['avatar'] = AVATAR_TEXTURE
+	_get_lobby_members() # get the lobby members again since one of them has left.
+
+func _on_p2p_session_request(remoteID:int):
+	# name of player requesting peer to peer session
+	var _remoteName:String = Steam.getfriendPersonaName(remoteID)
 	
-	# just to be safe in the future, we don't know if we'll need the avatar for other
-	# things in the networking side and we don't want to update it every time we get a new
-	# avatar
-	members_downloaded += 1
-	if lobby_changed && members_downloaded == len(Global.LOBBY_MEMBERS):
-		members_downloaded = 0
-		lobby_changed = false
-		emit_signal("lobby_members_changed")
+	# accept it, logic to deny in here aswell - perhaps if he is not in the lobby?
+	Steam.acceptP2PSessionWithUser(remoteID)
+	
+	_make_p2p_handshake() # acknowledge the session request, accept it and then send a handshake back
 
-func _on_Lobby_members_changed():
-	pass
-
-func _exit_tree():
-	_leave_Lobby()
+func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
+	# List of possible errors returned by SendP2PPacket
+	if session_error == 0: # k_EP2PSessionErrorNone - no error
+		print("Session failure with %s [no error given.]" % str(lobbyID))
+	elif session_error == 1: # k_EP2PSessionErrorNotRunningApp - player is not running the same game
+		print("Session failure with %s [not running the same game.]" % str(lobbyID))
+	elif session_error == 2: # k_EP2PSessionErrorNoRightsToApp - player doesnt own the game
+		print("Session failure with %s [player doesn't own the game.]" % str(lobbyID))
+	elif session_error == 3: # k_EP2PSessionErrorDestinationNotLoggedIn - player isn't connected to steam
+		print("Session failure with %s [player isn't connected to Steam.]" % str(lobbyID))
+	elif session_error == 4: # k_EP2PSessionErrorTimeout - connection timed out
+		print("Session failure with %s [connection timed out.]" % str(lobbyID))
+	elif session_error == 5: # k_EP2PSessionErrorMax - unused
+		print("Session failure with %s [unused]" % str(lobbyID))
+	else: # unknown error happened 
+		print("Session failure with %s [unknown error]" % str(lobbyID))

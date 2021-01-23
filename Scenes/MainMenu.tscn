@@ -49,7 +49,7 @@ modulate = Color( 1, 1, 1, 0.47451 )
 position = Vector2( 340, 318.586 )
 frames = SubResource( 1 )
 animation = "menuloop"
-frame = 8
+frame = 2
 speed_scale = 1.5
 playing = true
 
@@ -84,14 +84,14 @@ __meta__ = {
 
 [node name="CenterContainer" type="CenterContainer" parent="MarginContainer"]
 margin_left = 120.0
-margin_right = 780.0
-margin_bottom = 520.0
+margin_right = 1032.0
+margin_bottom = 688.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/CenterContainer"]
-margin_left = 58.0
-margin_top = 93.0
-margin_right = 601.0
-margin_bottom = 426.0
+margin_left = 184.0
+margin_top = 177.0
+margin_right = 727.0
+margin_bottom = 510.0
 custom_constants/separation = 15
 
 [node name="lTitle" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer"]

@@ -9,4 +9,4 @@ var WorldState = []
 
 func _ready():
 	Player1 = PlayerScene.instance()
-	Player1.get_node("CenterContainer/Name").text = Steam.getFriendPersonaName(Global.STEAM_ID)
+	Player1.get_node("CenterContainer/Name").text = Steam.getFriendPersonaName(Global.gSteamID)

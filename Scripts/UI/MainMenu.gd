@@ -20,25 +20,24 @@ func _process(_delta):
  
 func _ready():
 	# warning-ignore:return_value_discarded
-	$MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer/btPlay.connect("pressed", self, "_btOnPlayPressed")
+	$MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer/btPlay.connect("pressed", self, "_btPlayOnPressed")
 	# warning-ignore:return_value_discarded
-	$MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer/btOptions.connect("pressed", self, "_btOnOptionsPressed")
+	$MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer/btOptions.connect("pressed", self, "_btOptionsOnPressed")
 	# warning-ignore:return_value_discarded
-	$MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer/btQuit.connect("pressed", self, "_btOnQuitPressed")
+	$MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer/btQuit.connect("pressed", self, "_btQuitOnPressed")
 	
 	$lVersion.text = Global.version
 
-func _btOnPlayPressed():
-	print("Start the game (go to the main area)")
+func _btPlayOnPressed():
 	# warning-ignore:return_value_discarded
 	var ret = get_tree().change_scene("res://Scenes/RoomTypes/LandingRoom.tscn") # test scene
 #	gWorld.spawn_player(Vector2(450, 450))
 	if(ret == OK):
-		print('Changing scenes worked')
+		print("Changing scenes worked, we're now in the main area")
 	
-func _btOnOptionsPressed():
+func _btOptionsOnPressed():
 	print("No options at the moment :( (sorry!)")
 
-func _btOnQuitPressed():
+func _btQuitOnPressed():
 	print("Goodbye!")
 	get_tree().quit()
