@@ -7,7 +7,6 @@ func _ready() -> void:
 #	Steam.connect("lobby_message", self, "_on_Lobby_Message") # a chat message has been sent
 #	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update") # the lobby metadata has changed
 #	Steam.connect("lobby_invite", self, "_on_Lobby_Invite") # get invited to lobby (steam UI takes care of it)
-	Steam.connect("join_requested", self, "_on_lobby_join_requested()")
 	Steam.connect("p2p_session_request", self, "_on_p2p_session_request")
 	Steam.connect("p2p_session_connect_fail", self, "_on_p2p_session_connect_fail")
 	
@@ -100,14 +99,6 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 	elif _response == 5: # k_EChatRoomEnterResponseError - the lobby join was unsuccesful
 		print("Failed joining lobby")
 
-func _on_lobby_join_requested(lobbyID:int, friendID:int):
-	# triggered if the player is already in game and accepts a steam invite
-	# or clicks 'join game' in the friendlist to join a friend's game
-	print("Joining %s's lobby" % Steam.getFriendPersonaName(friendID))
-	
-	# join the lobby normally
-	_join_lobby(lobbyID)
-
 func _get_lobby_members():
 	# clear the lobby members, we're in a new lobby now
 	Global.lobbyMembers.clear()
@@ -122,7 +113,7 @@ func _get_lobby_members():
 		# get their steam name
 		var memberSteamName:String = Steam.getFriendPersonaName(memberSteamID)
 		# append them to the lobby members array
-		Global.lobbyMember.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
+		Global.lobbyMembers.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
