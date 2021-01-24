@@ -25,7 +25,7 @@ func _ready():
 		if Steam.isSubscribed() == false: #game is not owned
 			print("Player might have the game pirated, do something here")
 	
-	Steam.connect("join_requested", self, "_on_lobby_join_requested()")
+	Steam.connect("join_requested", self, "_on_lobby_join_requested")
 
 func _process(_delta):
 	Steam.run_callbacks()
