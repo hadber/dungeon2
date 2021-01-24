@@ -7,9 +7,11 @@ var in_dialogue:bool = false
 var steamLobbyID:int = 0
 var lobbyMemberNames:Dictionary = {}
 var chatNode
-var isPlayerHost:bool
+var isPlayerHost:bool = true
 var players = {}
 var version = 'ver 0.1.5a'
+
+const lobby_room = preload("res://Scenes/RoomTypes/LobbyRoom.tscn")
 
 func _ready():
 
@@ -26,6 +28,8 @@ func _ready():
 			print("Player might have the game pirated, do something here")
 	
 	Steam.connect("join_requested", self, "_on_lobby_join_requested")
+	
+	#just for test
 
 func _process(_delta):
 	Steam.run_callbacks()
@@ -34,8 +38,13 @@ func _on_lobby_join_requested(lobbyID:int, friendID:int):
 	# triggered if the player is already in game and accepts a steam invite
 	# or clicks 'join game' in the friendlist to join a friend's game
 	print("Joining %s's lobby" % Steam.getFriendPersonaName(friendID))
+	isPlayerHost = false
 	
-	
-	var _ret = get_tree().change_scene("res://Scenes/RoomTypes/LobbyRoom.tscn") # test scene
+	var _ret = get_tree().change_scene_to(lobby_room) # test scene
 	# join the lobby normally
-	get_node("MultiplayerLoader/Multiplayer")._join_lobby(lobbyID)
+#	var mp_node = null
+#	while(mp_node == null):
+	yield(get_tree().create_timer(1.0), "timeout")
+	var mp_node = get_tree().root.get_node("LobbyRoom/MultiplayerLoader/Multiplayer") 
+	mp_node._join_lobby(lobbyID)
+

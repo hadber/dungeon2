@@ -178,7 +178,7 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, makingChangeID:int, cha
 
 func _on_p2p_session_request(remoteID:int):
 	# name of player requesting peer to peer session
-	var _remoteName:String = Steam.getfriendPersonaName(remoteID)
+	var _remoteName:String = Steam.getFriendPersonaName(remoteID)
 	
 	# accept it, logic to deny in here aswell - perhaps if he is not in the lobby?
 	Steam.acceptP2PSessionWithUser(remoteID)
