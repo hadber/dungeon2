@@ -45,6 +45,8 @@ func _on_lobby_join_requested(lobbyID:int, friendID:int):
 #	var mp_node = null
 #	while(mp_node == null):
 	yield(get_tree().create_timer(1.0), "timeout")
-	var mp_node = get_tree().root.get_node("LobbyRoom/MultiplayerLoader/Multiplayer") 
+	var mp_loader = get_tree().root.get_node("LobbyRoom/MultiplayerLoader")
+	mp_loader.create_mp()
+	var mp_node = get_tree().root.get_node("LobbyRoom/MultiplayerLoader/Multiplayer")
 	mp_node._join_lobby(lobbyID)
 

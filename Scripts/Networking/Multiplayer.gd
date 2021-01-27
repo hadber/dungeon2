@@ -31,10 +31,10 @@ func _check_command_line():
 				argLobbyInv = true
 
 func process(_delta):
-	var packet = Steam.getAvailableP2PPacketSize(0)
+#	var packet = Steam.getAvailableP2PPacketSize(0)
 	
-	for pack in packet:
-		_read_p2p_packet()
+#	for pack in packet:
+	_read_p2p_packet()
 
 func _create_lobby():
 	if Global.steamLobbyID == 0:
