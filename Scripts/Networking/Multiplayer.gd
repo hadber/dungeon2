@@ -30,11 +30,11 @@ func _check_command_line():
 			if arg == "+connect_lobby":
 				argLobbyInv = true
 
-func process(_delta):
-#	var packet = Steam.getAvailableP2PPacketSize(0)
+func _process(_delta):
+	var packet = Steam.getAvailableP2PPacketSize(0)
 	
-#	for pack in packet:
-	_read_p2p_packet()
+	for pack in packet:
+		_read_p2p_packet()
 
 func _create_lobby():
 	if Global.steamLobbyID == 0:
@@ -121,6 +121,7 @@ func _make_p2p_handshake():
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
+	print("packetSize: ", packetSize)
 	
 	if packetSize > 0:
 		
@@ -157,7 +158,9 @@ func _send_p2p_packet(target:String, sendDict):
 	if target == "all": # broadcast to all members
 		if Global.lobbyMembers.size() > 1:
 			for member in Global.lobbyMembers:
+				print("sending handshake to: ", member['steam_id'])
 				if member['steam_id'] != Global.gSteamID:
+					print("sending handshake to: ", member['steam_id'])
 					Steam.sendP2PPacket(member['steam_id'], data, sendType, 0)
 	else:
 		Steam.sendP2PPacket(int(target), data, sendType, 0)
@@ -168,11 +171,11 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, makingChangeID:int, cha
 	
 	if chatState == 1: # player has joined the lobby
 		print(changerName, " has joined the lobby.")
-	if chatState == 2: # player has left the lobby
+	elif chatState == 2: # player has left the lobby
 		print(changerName, " has left the lobby.")
-	if chatState == 8: # player has been kicked? - tbh this isnt even implemented in the steamworks backend
+	elif chatState == 8: # player has been kicked? - tbh this isnt even implemented in the steamworks backend
 		print(changerName, " has been kicked from the lobby.")
-	if chatState == 16: # player has been banned
+	elif chatState == 16: # player has been banned
 		print(changerName, " has been banned from the lobby.")
 	else: # unknown thing happened to player
 		print("Unknown change has occured for ", changerName)
