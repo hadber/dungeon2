@@ -121,7 +121,6 @@ func _make_p2p_handshake():
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
-	print("packetSize: ", packetSize)
 	
 	if packetSize > 0:
 		
@@ -158,9 +157,7 @@ func _send_p2p_packet(target:String, sendDict):
 	if target == "all": # broadcast to all members
 		if Global.lobbyMembers.size() > 1:
 			for member in Global.lobbyMembers:
-				print("sending handshake to: ", member['steam_id'])
 				if member['steam_id'] != Global.gSteamID:
-					print("sending handshake to: ", member['steam_id'])
 					Steam.sendP2PPacket(member['steam_id'], data, sendType, 0)
 	else:
 		Steam.sendP2PPacket(int(target), data, sendType, 0)
