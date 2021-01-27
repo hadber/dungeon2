@@ -16,15 +16,24 @@ _global_script_class_icons={
 [application]
 
 config/name="Dungeon 2"
-run/main_scene="res://Scenes/Room.tscn"
+run/main_scene="res://Scenes/MainMenu.tscn"
+boot_splash/bg_color=Color( 0.141176, 0.141176, 0.141176, 1 )
+config/icon="res://Assets/Raw_assets/icon/icon.png"
 
 [autoload]
 
 Global="*res://Scripts/Autoloads/Global.gd"
+gWorld="*res://Scripts/Autoloads/World.gd"
+
+[debug]
+
+gdscript/warnings/return_value_discarded=false
 
 [display]
 
-window/size/width=900
+window/size/width=1152
+window/size/height=768
+window/stretch/aspect="keep"
 
 [gdnative]
 

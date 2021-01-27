@@ -1,50 +1,45 @@
 extends Node
 
+const PlayerScene = preload("res://Scenes/Player.tscn")
+const PlayerNetworkScript = preload("res://Scripts/Entities/Player/PlayerNetwork.gd")
+
 var DATA
 var LOBBY_INVITE_ARG = false
 var lobby_changed:bool = false
 var members_downloaded = 0
 
-
 signal lobby_members_changed
 
-func _input(_event):
-#	if event.is_action_pressed("connectivity"):
-		#print(Steam.AVATAR_SMAL)
-		#Steam.getMediumFriendAvatar(Global.STEAM_ID)
-#		for member in Global.LOBBY_MEMBERS:
-#			print(member)
-	pass
 
-func _process(_delta):
-	_read_P2P_Packet()
-
+# Called when the node enters the scene tree for the first time.
 func _ready():
-	
-# warning-ignore:return_value_discarded
-	Steam.connect("avatar_loaded", self, "loaded_avatar")
-# warning-ignore:return_value_discarded
-	Steam.connect("lobby_created", self, "_on_Lobby_Created")
-# warning-ignore:return_value_discarded
-	Steam.connect("lobby_joined", self, "_on_Lobby_Joined") 
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
+	$"../Multiplayer".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
+	# warning-ignore:return_value_discarded
 	Steam.connect("lobby_chat_update", self, "_on_Lobby_Chat_Update")
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
+	Steam.connect("avatar_loaded", self, "loaded_avatar")
+	# warning-ignore:return_value_discarded
+	Steam.connect("lobby_created", self, "_on_Lobby_Created")
+	# warning-ignore:return_value_discarded
+	Steam.connect("lobby_joined", self, "_on_Lobby_Joined") 
+	# warning-ignore:return_value_discarded
 #	Steam.connect("lobby_invite", self, "_on_Lobby_Invite")
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
 	Steam.connect("p2p_session_request", self, "_on_P2P_Session_Request")
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
 	Steam.connect("p2p_session_connect_fail", self, "_on_P2P_Session_Connect_Fail")
 	
-#	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
+	Steam.connect("join_requested", self, "_on_Lobby_Join_Requested")
 #	Steam.connect("lobby_message", self, "_on_Lobby_Message")
 #	Steam.connect("lobby_data_update", self, "_on_Lobby_Data_Update")
-
 	# Check for command line arguments
 	_check_Command_Line()
 	_create_Lobby()
-
-
+	
+func _process(_delta):
+	_read_P2P_Packet()
+	
 func _check_Command_Line():
 	var ARGUMENTS = OS.get_cmdline_args()
 
@@ -53,7 +48,7 @@ func _check_Command_Line():
 
 		# Loop through them and get the useful ones
 		for ARGUMENT in ARGUMENTS:
-			print("Command line: "+str(ARGUMENT))
+			print("Command line: " + str(ARGUMENT))
 
 			# An invite argument was passed
 			if LOBBY_INVITE_ARG:
@@ -62,14 +57,11 @@ func _check_Command_Line():
 			# A Steam connection argument exists
 			if ARGUMENT == "+connect_lobby":
 				LOBBY_INVITE_ARG = true
-				Global.isPlayerHost = false
 
 func _create_Lobby():
 	# Make sure a lobby is not already set
 	if Global.STEAM_LOBBY_ID == 0:
 		Steam.createLobby(1, 2) 
-		# perhaps check the response aswell and tell the player
-		# if the lobby failed to create and why?
 
 func _on_Lobby_Created(connect, lobbyID):
 	if connect == 1:
@@ -105,14 +97,24 @@ func _on_Lobby_Joined(lobbyID, _permissions, _locked, _response):
 	# Make the initial handshake
 	_make_P2P_Handshake()
 
-func _get_Lobby_Members():
+func _on_Lobby_Join_Requested(lobbyID, friendID):
+	
+	# Get the lobby owner's name
+	var OWNER_NAME = Steam.getFriendPersonaName(friendID)
+	print("Joining " + str(OWNER_NAME) + "'s lobby...")
+	Global.isPlayerHost = false
+	# Attempt to join the lobby
+	_join_Lobby(lobbyID)
 
+func _get_Lobby_Members():
+	print("getting lobby members")
 	# Clear your previous lobby list
 	Global.LOBBY_MEMBERS.clear()
 	Global.NAMES.clear()
 
 	# Get the number of members from this lobby from Steam
 	var MEMBERS = Steam.getNumLobbyMembers(Global.STEAM_LOBBY_ID)
+	print(MEMBERS)
 
 	# Get the data of these players from Steam
 	for MEMBER in range(0, MEMBERS):
@@ -127,52 +129,20 @@ func _get_Lobby_Members():
 		Global.LOBBY_MEMBERS.append({"steam_id":MEMBER_STEAM_ID, "steam_name":MEMBER_STEAM_NAME})
 		Global.NAMES[MEMBER_STEAM_ID] = MEMBER_STEAM_NAME
 		Steam.getPlayerAvatar(1, MEMBER_STEAM_ID) # [1 - 3], SMALL to LARGE
+		
+		if MEMBER_STEAM_ID != Global.STEAM_ID:
+			var Player2 = PlayerScene.instance()
+			Player2.get_node("CenterContainer/Name").text = MEMBER_STEAM_NAME
+			Player2.get_node("Sprite").modulate = Color("#0000ff")
+			Player2.set_script(PlayerNetworkScript)
+			get_parent().add_child(Player2)
+			Global.PLAYERS[str(MEMBER_STEAM_ID)] = Player2
+		
 		# apparently Steam.getSmallFriendAvatar does not seem to work, or at least
 		# I'm not entirely sure how it works
 		# Needs further testing, but so far it works like this aswell!
 		
 	lobby_changed = true
-
-func _make_P2P_Handshake():
-
-	print("Sending P2P handshake to the lobby")
-	var lDATA = PoolByteArray()
-	lDATA.append(256)
-	lDATA.append_array(var2bytes({"message":"handshake", "from":Global.STEAM_ID}))
-	_send_P2P_Packet(lDATA, 2, 0)
-
-func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
-
-	# Get the user who has made the lobby change
-	var CHANGER = Steam.getFriendPersonaName(makingChangeID)
-
-	# If a player has joined the lobby
-	if chatState == 1:
-		print(str(CHANGER)+" has joined the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has joined the game.")
-
-	# Else if a player has left the lobby
-	elif chatState == 2:
-		print(str(CHANGER)+" has left the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has left the game.")
-
-	# Else if a player has been kicked
-	elif chatState == 8:
-		print(str(CHANGER)+" has been kicked from the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has been kicked from the lobby.")
-
-	# Else if a player has been banned
-	elif chatState == 16:
-		print(str(CHANGER)+" has been banned from the lobby.")
-		Global.ChatNode.add_chat(str(CHANGER) + " has been banned from the lobby.")
-
-	# Else there was some unknown change
-	else:
-		print(str(CHANGER)+" did... something.")
-		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
-
-	# Update the lobby now that a change has occurred
-	_get_Lobby_Members()
 
 func _on_Send_Chat_pressed():
 
@@ -200,6 +170,12 @@ func _leave_Lobby():
 		# Wipe the Steam lobby ID then display the default lobby ID and player list title
 		Global.STEAM_LOBBY_ID = 0
 
+		if Global.isPlayerHost:
+			var sendVector = PoolByteArray()
+			sendVector.append(64)
+			sendVector.append_array(var2bytes({"message":"leaveLobbyPlease", "from":Global.STEAM_ID}))
+			_send_P2P_Packet(sendVector, 1, 0)
+
 		# Close session with all users
 		for MEMBERS in Global.LOBBY_MEMBERS:
 			# warning-ignore:return_value_discarded
@@ -222,10 +198,14 @@ func _on_P2P_Session_Request(remoteID):
 		_make_P2P_Handshake()
 	else:
 		print("Rejected P2P session with " + str(REQUESTER))
-	
-	# Make the initial handshake
 
+func _make_P2P_Handshake():
 
+	print("Sending P2P handshake to the lobby")
+	var lDATA = PoolByteArray()
+	lDATA.append(256)
+	lDATA.append_array(var2bytes({"message":"handshake", "from":Global.STEAM_ID}))
+	_send_P2P_Packet(lDATA, 2, 0)
 
 func _read_P2P_Packet():
 
@@ -246,25 +226,60 @@ func _read_P2P_Packet():
 		# Make the packet data readable
 		var READABLE = bytes2var(PACKET.data.subarray(1, PACKET_SIZE - 1))
 
-		# Print the packet to output
-		print("Packet: " + str(READABLE))
-
-		# Append logic here to deal with packet data
+		if READABLE.has("from"):
+			if str(READABLE["message"]) == "leaveLobbyPlease":
+				_leave_Lobby()
+				Global.ChatNode.add_chat("Lobby leader disconnected, abandoning lobby...")
+			elif Global.PLAYERS.has(str(READABLE["from"])):
+				if str(READABLE["message"]) != "handshake":
+					Global.PLAYERS.get(str(READABLE["from"])).update_vector(READABLE["message"])
 
 func _send_P2P_Packet(data, send_type, channel):
 	
-	# If there is more than one user, send packets
 	if Global.LOBBY_MEMBERS.size() > 1:
 	
-		# Loop through all members that aren't you
 		for MEMBER in Global.LOBBY_MEMBERS:
 			if MEMBER['steam_id'] != Global.STEAM_ID:
 				# warning-ignore:return_value_discarded
 				Steam.sendP2PPacket(MEMBER['steam_id'], data, send_type, channel)
 
+func _on_Lobby_Chat_Update(_lobbyID, _changedID, makingChangeID, chatState):
+
+	_get_Lobby_Members()
+
+	var CHANGER = Steam.getFriendPersonaName(makingChangeID)
+	if chatState == 1:
+		print(str(CHANGER) + " has joined the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has joined the game.")
+
+	# Else if a player has left the lobby
+	elif chatState == 2:
+		print(str(CHANGER) + " has left the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has left the game.")
+		remove_player(makingChangeID)
+	# Else if a player has been kicked
+	elif chatState == 8:
+		print(str(CHANGER) + " has been kicked from the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has been kicked from the lobby.")
+		remove_player(makingChangeID)
+	# Else if a player has been banned
+	elif chatState == 16:
+		print(str(CHANGER)+" has been banned from the lobby.")
+		Global.ChatNode.add_chat(str(CHANGER) + " has been banned from the lobby.")
+		remove_player(makingChangeID)
+	# Else there was some unknown change
+	else:
+		print(str(CHANGER)+" did... something.")
+		Global.ChatNode.add_chat("Unknown lobby change occured for " + str(CHANGER))
+
+func remove_player(playerID):
+	if Global.PLAYERS.has(str(playerID)):
+		Global.PLAYERS.get(str(playerID)).queue_free()
+		Global.PLAYERS.erase(str(playerID))
+
 func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
 
-	Global.ChatNode.add_chat("P2P session connection failed, check the log for more info...")
+	Global.ChatNode.add_chat("P2P session connection failed, check the log for more info.")
 	# If no error was given
 	if session_error == 0:
 		print("WARNING: Session failure with " + str(lobbyID) + " [no error given].")
@@ -295,12 +310,10 @@ func _on_P2P_Session_Connect_Fail(lobbyID, session_error):
 
 func loaded_avatar(id, size, buffer):
 
-	# Create a new image and texture to fill out
 	var AVATAR = Image.new()
 	var AVATAR_TEXTURE = ImageTexture.new()
 	AVATAR.create(size, size, false, Image.FORMAT_RGBAF)
 
-	# Lock the image and fill the pixels from the data buffer
 	AVATAR.lock()
 	for y in range(0, size):
 		for x in range(0, size):
@@ -326,3 +339,9 @@ func loaded_avatar(id, size, buffer):
 		members_downloaded = 0
 		lobby_changed = false
 		emit_signal("lobby_members_changed")
+
+func _on_Lobby_members_changed():
+	pass
+
+func _exit_tree():
+	_leave_Lobby()

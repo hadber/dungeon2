@@ -1,0 +1,133 @@
+[gd_scene load_steps=18 format=2]
+
+[ext_resource path="res://Assets/MainMenu/background-0.png" type="Texture" id=1]
+[ext_resource path="res://Assets/MainMenu/background-3.png" type="Texture" id=2]
+[ext_resource path="res://Assets/MainMenu/background-6.png" type="Texture" id=3]
+[ext_resource path="res://Assets/MainMenu/background-5.png" type="Texture" id=4]
+[ext_resource path="res://Assets/MainMenu/background-4.png" type="Texture" id=5]
+[ext_resource path="res://Assets/MainMenu/background-8.png" type="Texture" id=6]
+[ext_resource path="res://Assets/MainMenu/background-7.png" type="Texture" id=7]
+[ext_resource path="res://Assets/MainMenu/background-9.png" type="Texture" id=8]
+[ext_resource path="res://Assets/MainMenu/background-10.png" type="Texture" id=9]
+[ext_resource path="res://Assets/MainMenu/background-11.png" type="Texture" id=10]
+[ext_resource path="res://Assets/MainMenu/background-2.png" type="Texture" id=11]
+[ext_resource path="res://Assets/MainMenu/background-1.png" type="Texture" id=12]
+[ext_resource path="res://Scripts/UI/MainMenu.gd" type="Script" id=13]
+[ext_resource path="res://Assets/Fonts/pixeloperator-bold.tres" type="DynamicFont" id=14]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 1 ), ExtResource( 12 ), ExtResource( 11 ), ExtResource( 2 ), ExtResource( 5 ), ExtResource( 4 ), ExtResource( 3 ), ExtResource( 7 ), ExtResource( 6 ), ExtResource( 8 ), ExtResource( 9 ), ExtResource( 10 ) ],
+"loop": true,
+"name": "menuloop",
+"speed": 5.0
+} ]
+
+[sub_resource type="DynamicFontData" id=2]
+font_path = "res://Assets/Fonts/pixel-operator/PixelOperator-Bold.ttf"
+
+[sub_resource type="DynamicFont" id=3]
+size = 96
+outline_size = 6
+outline_color = Color( 0, 0, 0, 1 )
+extra_spacing_char = -1
+extra_spacing_space = -4
+font_data = SubResource( 2 )
+
+[node name="MainMenu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 1.41418
+margin_bottom = 1.41418
+script = ExtResource( 13 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+modulate = Color( 1, 1, 1, 0.47451 )
+position = Vector2( 340, 318.586 )
+frames = SubResource( 1 )
+animation = "menuloop"
+frame = 9
+speed_scale = 1.5
+playing = true
+
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_top = -1.41418
+margin_right = 40.0
+margin_bottom = 38.5858
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lVersion" type="Label" parent="."]
+margin_left = 1.0
+margin_top = 583.586
+margin_right = 41.0
+margin_bottom = 597.586
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 6.10352e-05
+custom_constants/margin_right = 120
+custom_constants/margin_top = 0
+custom_constants/margin_left = 120
+custom_constants/margin_bottom = 80
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer"]
+margin_left = 120.0
+margin_right = 1032.0
+margin_bottom = 688.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/CenterContainer"]
+margin_left = 184.0
+margin_top = 177.0
+margin_right = 727.0
+margin_bottom = 510.0
+custom_constants/separation = 15
+
+[node name="lTitle" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer"]
+margin_right = 543.0
+margin_bottom = 96.0
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.737255, 0.407843, 0.407843, 1 )
+text = "META DUNGEON"
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/CenterContainer/VBoxContainer"]
+margin_top = 111.0
+margin_right = 543.0
+margin_bottom = 333.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/CenterContainer/VBoxContainer/CenterContainer"]
+margin_left = 162.0
+margin_right = 380.0
+margin_bottom = 222.0
+custom_constants/separation = 6
+
+[node name="btPlay" type="Button" parent="MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+margin_right = 218.0
+margin_bottom = 70.0
+custom_fonts/font = ExtResource( 14 )
+text = "Play"
+
+[node name="btOptions" type="Button" parent="MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+margin_top = 76.0
+margin_right = 218.0
+margin_bottom = 146.0
+custom_fonts/font = ExtResource( 14 )
+text = "Options"
+
+[node name="btQuit" type="Button" parent="MarginContainer/CenterContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+margin_top = 152.0
+margin_right = 218.0
+margin_bottom = 222.0
+custom_fonts/font = ExtResource( 14 )
+text = "Quit"

@@ -1,27 +1,50 @@
 extends Node
 
-#var ONLINE = Steam.loggedOn()
-var STEAM_ID
-var STEAM_USERNAME
-var LOBBY_MEMBERS = []
-var in_dialogue = false
-var STEAM_LOBBY_ID = 0
-var NAMES = {}
-var ChatNode
-var isPlayerHost:bool
-#var OWNED = Steam.isSubscribed()
+var gSteamID:int
+var gSteamUsername:String
+var lobbyMembers:Array = []
+var in_dialogue:bool = false
+var steamLobbyID:int = 0
+var lobbyMemberNames:Dictionary = {}
+var chatNode
+var isPlayerHost:bool = true
+var players = {}
+var version = 'ver 0.1.5a'
+
+const lobby_room = preload("res://Scenes/RoomTypes/LobbyRoom.tscn")
 
 func _ready():
 
-	var INIT = Steam.steamInit()
-	print("Steam init: " + str(INIT))
+	var SteamInit = Steam.steamInit()
+	print("Steam init: " + str(SteamInit))
 		
-	STEAM_ID = Steam.getSteamID()
-	STEAM_USERNAME = Steam.getFriendPersonaName(STEAM_ID)
+	gSteamID = Steam.getSteamID()
+	gSteamUsername = Steam.getFriendPersonaName(gSteamID)
 	
-	if INIT['status'] != 1:
-		print("Failed to initialize Steam. " + str(INIT['verbal']) + " Shutting down...")
-		get_tree().quit()
+	if SteamInit['status'] != 1:
+		print("Failed to initialize Steam. Reason: " + str(SteamInit['verbal']))
+	else:
+		if Steam.isSubscribed() == false: #game is not owned
+			print("Player might have the game pirated, do something here")
+	
+	Steam.connect("join_requested", self, "_on_lobby_join_requested")
+	
+	#just for test
 
 func _process(_delta):
 	Steam.run_callbacks()
+
+func _on_lobby_join_requested(lobbyID:int, friendID:int):
+	# triggered if the player is already in game and accepts a steam invite
+	# or clicks 'join game' in the friendlist to join a friend's game
+	print("Joining %s's lobby" % Steam.getFriendPersonaName(friendID))
+	isPlayerHost = false
+	
+	var _ret = get_tree().change_scene_to(lobby_room) # test scene
+	# join the lobby normally
+#	var mp_node = null
+#	while(mp_node == null):
+	yield(get_tree().create_timer(1.0), "timeout")
+	var mp_node = get_tree().root.get_node("LobbyRoom/MultiplayerLoader/Multiplayer") 
+	mp_node._join_lobby(lobbyID)
+

@@ -1,0 +1,11 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Scenes/BasicRoom/BasicRoomPrototype.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Assets/RoomAssets/room_bg.png" type="Texture" id=2]
+[ext_resource path="res://Scripts/Rooms/LandingRoom.gd" type="Script" id=3]
+
+[node name="LandingRoom" instance=ExtResource( 1 )]
+script = ExtResource( 3 )
+
+[node name="room_sprite" parent="." index="0"]
+texture = ExtResource( 2 )

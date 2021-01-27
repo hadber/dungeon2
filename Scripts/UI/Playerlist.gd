@@ -19,7 +19,7 @@ func _ready():
 	# connect it to the signal so that only when there are changes to the lobby
 	# members (eg someone leaves or joins), the list is updated
 	# warning-ignore:return_value_discarded
-	$"../Networking".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
+	$"../Multiplayer".connect("lobby_members_changed", self, "_on_Lobby_members_changed")
 
 func _on_Lobby_members_changed(): # triggered when someones leaves/joins the lobby
 	
