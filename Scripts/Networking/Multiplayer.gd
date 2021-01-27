@@ -135,6 +135,9 @@ func _read_p2p_packet():
 		var _senderID:String = str(packet.steamIDRemote)
 		var _packetCode:String = str(packet.data[0])
 		
+		print("entire packet: ", packet)
+		print("packet data: ", packet.data)
+		print("packet code: ", _packetCode)
 		var packetRead:PoolByteArray = bytes2var(packet.data.subarray(1, packetSize-1))
 		print("Read packet data: ", str(packetRead))
 
