@@ -107,7 +107,9 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 		print("Successfully joined lobby (ID: %s)" % str(lobbyID)) 
 		Global.steamLobbyID = lobbyID
 		_get_lobby_members()
+#		Steam.getP2PSessionState() # maybe check whether a connection already exists?
 		_make_p2p_handshake()
+		spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 		
 	elif _response == 5: # k_EChatRoomEnterResponseError - the lobby join was unsuccesful
 		print("Failed joining lobby")
@@ -131,7 +133,7 @@ func _get_lobby_members():
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
 	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
-#	spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+	spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -154,7 +156,9 @@ func _read_p2p_packet():
 		match packetCode:
 			PACKETS.HANDSHAKE: # first packet sent to establish connection
 				print("Got a handshake request from: ", senderID)
-				spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+				print(Steam.getP2PSessionState(int(senderID)))
+					# if there 
+				#spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
 			PACKETS.SPAWN_PLAYER:
@@ -205,10 +209,13 @@ func _on_p2p_session_request(remoteID:int):
 	# name of player requesting peer to peer session
 	var _remoteName:String = Steam.getFriendPersonaName(remoteID)
 	
+	print("Got a P2P session request, sending one back...")
 	# accept it, logic to deny in here aswell - perhaps if he is not in the lobby?
-	Steam.acceptP2PSessionWithUser(remoteID)
-	
-	_make_p2p_handshake() # acknowledge the session request, accept it and then send a handshake back
+	print(Global.lobbyMembers)
+	for member in Global.lobbyMembers:
+		if(member.steam_id == remoteID):
+			Steam.acceptP2PSessionWithUser(remoteID)
+			_make_p2p_handshake() # acknowledge the session request, accept it and then send a handshake back
 
 func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 	# List of possible errors returned by SendP2PPacket
