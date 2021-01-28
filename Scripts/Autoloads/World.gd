@@ -6,6 +6,7 @@ var Player1
 var spawn_side:Vector2 = Vector2(450, 260)
 var WorldState = []
 var Player2
+var currentRoom
 
 func _ready():
 	Player1 = PlayerScene.instance()

@@ -30,8 +30,9 @@ func _enter_tree():
 	if(gWorld.Player1 == null): # This is for debugging, if it has come to this, something bad probably happened
 		print("This is supposed to happen only during debugging. If you are seeing this, something bad likely happened.")
 		gWorld.Player1 = gWorld.PlayerScene.instance()
-	add_child_below_node($Doors, gWorld.Player1)
+	get_node("Players").add_child(gWorld.Player1)
 	gWorld.Player1.spawn_me(gWorld.spawn_side)
+	gWorld.currentRoom = self
 
 #func _ready():
 #	create_room()

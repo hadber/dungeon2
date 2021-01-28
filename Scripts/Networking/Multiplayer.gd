@@ -131,6 +131,7 @@ func _get_lobby_members():
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
 	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
+	spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -153,14 +154,14 @@ func _read_p2p_packet():
 		match packetCode:
 			PACKETS.HANDSHAKE: # first packet sent to establish connection
 				print("Got a handshake request from: ", senderID)
-				spawn_guest_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+				spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
 			PACKETS.SPAWN_PLAYER:
 				print("Trying to spawn player on: ", packetRead)
 				gWorld.add_player_two(senderID)
 				gWorld.Player2.spawn_me(Vector2(packetRead.x, packetRead.y))
-				get_node("../..").add_child(gWorld.Player2)
+				gWorld.currentRoom.get_node("Players").add_child(gWorld.Player2)
 			_:
 				print("[NET] Unknown: ", packetCode)
 #		print("Read packet data: ", str(packetRead))
@@ -226,5 +227,5 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 	else: # unknown error happened 
 		print("Session failure with %s [unknown error]" % str(lobbyID))
 
-func spawn_guest_player(posx:float, posy:float):
+func spawn_remote_player(posx:float, posy:float):
 	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
