@@ -131,7 +131,7 @@ func _get_lobby_members():
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
 	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
-	spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+#	spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
