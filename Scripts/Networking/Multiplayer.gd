@@ -1,5 +1,11 @@
 extends Node
 
+enum PACKETS {
+	HANDSHAKE, 
+	SPAWN_PLAYER,
+	WORLDSTATE
+	}
+
 func _ready() -> void:
 	Steam.connect("lobby_created", self, "_on_lobby_created")
 	Steam.connect("lobby_joined", self, "_on_lobby_joined")
@@ -117,7 +123,7 @@ func _get_lobby_members():
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
-	_send_p2p_packet("all", {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
+	_send_p2p_packet("all", PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -132,16 +138,20 @@ func _read_p2p_packet():
 			print("EPIC FAIL: read an empty packet with non-zero size.")
 		
 		# remote sender information
-		var _senderID:String = str(packet.steamIDRemote)
-		var _packetCode:String = str(packet.data[0])
+		var senderID:String = str(packet.steamIDRemote)
+		var packetCode:String = str(packet.data[0])
 		
-		print("entire packet: ", packet)
-		print("packet data: ", packet.data)
-		print("packet code: ", _packetCode)
-		var packetRead:PoolByteArray = bytes2var(packet.data.subarray(1, packetSize-1))
-		print("Read packet data: ", str(packetRead))
+		var packetRead:Dictionary = bytes2var(packet.data.subarray(1, packetSize-1))
+		
+		match packetCode:
+			PACKETS.HANDSHAKE: # first packet sent to establish connection
+				print("Got a handshake request from: %s", senderID)
+			PACKETS.WORLDSTATE: # worldstate update
+				print("Got a new worldstate update, please do something with this!")
+		
+#		print("Read packet data: ", str(packetRead))
 
-func _send_p2p_packet(target:String, sendDict):
+func _send_p2p_packet(target:String, packetType:int, sendDict:Dictionary):
 	# send types
 	# 0 - unreliable, basic UDP send
 	# 1 - unreliable no delay, drop packets if no connection exists
@@ -151,7 +161,7 @@ func _send_p2p_packet(target:String, sendDict):
 	var sendType = 2
 	
 	var data:PoolByteArray = PoolByteArray()
-	data.append(256)
+	data.append(packetType)
 	data.append_array(var2bytes(sendDict))
 	
 	if target == "all": # broadcast to all members
@@ -161,7 +171,6 @@ func _send_p2p_packet(target:String, sendDict):
 					Steam.sendP2PPacket(member['steam_id'], data, sendType, 0)
 	else:
 		Steam.sendP2PPacket(int(target), data, sendType, 0)
-	
 
 func _on_lobby_chat_update(_lobbyID:int, _changedID:int, makingChangeID:int, chatState:int):
 	var changerName:String = Steam.getFriendPersonaName(makingChangeID)
@@ -204,3 +213,6 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 		print("Session failure with %s [unused]" % str(lobbyID))
 	else: # unknown error happened 
 		print("Session failure with %s [unknown error]" % str(lobbyID))
+
+func spawn_guest_player(posx:float, posy:float):
+	_send_p2p_packet("all", PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})

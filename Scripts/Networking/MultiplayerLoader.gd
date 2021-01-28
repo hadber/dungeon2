@@ -4,10 +4,12 @@ const mp_scene = preload("res://Scenes/Multiplayer.tscn")
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	if(Global.isPlayerHost == true):
-		var actual_mp = mp_scene.instance()
-		actual_mp._create_lobby()
-		add_child(actual_mp)
+		add_multiplayer_scene(true)
 
-func create_mp(): # we dont create a lobby in this case
-	var actual_mp = mp_scene.instance()
-	add_child(actual_mp)
+func add_multiplayer_scene(createLobby:bool = false): # we dont create a lobby in this case
+	var actualMP = mp_scene.instance()
+	if(createLobby):
+		actualMP._create_lobby()
+	else:
+		actualMP.spawn_guest_player() # this 
+	add_child(actualMP)
