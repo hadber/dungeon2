@@ -22,7 +22,7 @@ func _ready(): # once node entered tree
 	
 func _physics_process(delta):
 	#gWorld.WorldState.append()
-	add_player_state()
+#	add_player_state()
 	if not Global.in_dialogue:
 		var input_vector = Vector2.ZERO
 		input_vector.x = Input.get_action_strength("right") - Input.get_action_strength("left")

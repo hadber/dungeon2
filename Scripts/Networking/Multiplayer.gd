@@ -160,6 +160,7 @@ func _read_p2p_packet():
 				print("Trying to spawn player on: ", packetRead)
 				gWorld.add_player_two(senderID)
 				gWorld.Player2.spawn_me(Vector2(packetRead.x, packetRead.y))
+				get_node("../..").add_child(gWorld.Player2)
 			_:
 				print("[NET] Unknown: ", packetCode)
 #		print("Read packet data: ", str(packetRead))
