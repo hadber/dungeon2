@@ -53,7 +53,7 @@ func create_room():
 			midwall.set_deferred("disabled", false)
 
 func on_player_entered_door(which_side):
-	remove_child(gWorld.Player1)
+	get_node("Players").remove_child(gWorld.Player1)
 	
 	var root = get_tree().get_root()
 	# Remove the current room from the scene tree
