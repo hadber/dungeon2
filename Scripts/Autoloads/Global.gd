@@ -46,7 +46,7 @@ func _on_lobby_join_requested(lobbyID:int, friendID:int):
 #	while(mp_node == null):
 	yield(get_tree().create_timer(1.0), "timeout")
 	var mp_loader = get_tree().root.get_node("LobbyRoom/MultiplayerLoader")
-	mp_loader.add_multiplayer_lobby(false)
+	mp_loader.add_multiplayer_scene(false)
 	var mp_node = get_tree().root.get_node("LobbyRoom/MultiplayerLoader/Multiplayer")
 	mp_node._join_lobby(lobbyID)
 	mp_node.spawn_guest_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
