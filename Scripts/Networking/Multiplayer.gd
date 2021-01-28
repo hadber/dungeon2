@@ -1,9 +1,9 @@
 extends Node
 
 enum PACKETS {
-	HANDSHAKE, # 1
-	SPAWN_PLAYER, # 2
-	WORLDSTATE # 3
+	HANDSHAKE, # 0
+	SPAWN_PLAYER, # 1
+	WORLDSTATE # 2
 	}
 
 enum SENDTYPES {
@@ -146,15 +146,14 @@ func _read_p2p_packet():
 		
 		# remote sender information
 		var senderID:String = str(packet.steamIDRemote)
-		var packetCode:String = str(packet.data[0])
+		var packetCode:int = packet.data[0]
 		
 		var packetRead:Dictionary = bytes2var(packet.data.subarray(1, packetSize-1))
 		
-		print("[NET] Got packet with code: ", packetCode)
-		print(PACKETS)
 		match packetCode:
 			PACKETS.HANDSHAKE: # first packet sent to establish connection
-				print("Got a handshake request from: %s", senderID)
+				print("Got a handshake request from: ", senderID)
+				spawn_guest_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
 			PACKETS.SPAWN_PLAYER:

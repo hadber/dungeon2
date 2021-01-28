@@ -49,6 +49,5 @@ func _on_lobby_join_requested(lobbyID:int, friendID:int):
 	mp_loader.add_multiplayer_scene(false)
 	var mp_node = get_tree().root.get_node("LobbyRoom/MultiplayerLoader/Multiplayer")
 	mp_node._join_lobby(lobbyID)
-	mp_node.spawn_guest_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 	# generate the random spawn
 	
