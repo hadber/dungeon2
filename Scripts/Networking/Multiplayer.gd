@@ -148,7 +148,10 @@ func _read_p2p_packet():
 				print("Got a handshake request from: %s", senderID)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
-		
+			PACKETS.SPAWN_PLAYER:
+				# 	_send_p2p_packet("all", PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
+				gWorld.add_player_two(senderID)
+				gWorld.Player2.spawn_me(packetRead.x, packetRead.y)
 #		print("Read packet data: ", str(packetRead))
 
 func _send_p2p_packet(target:String, packetType:int, sendDict:Dictionary):
