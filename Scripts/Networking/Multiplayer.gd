@@ -6,6 +6,13 @@ enum PACKETS {
 	WORLDSTATE
 	}
 
+enum SENDTYPES {
+	UNRELIABLE,
+	UNRELIABLE_NO_DELAY,
+	RELIABLE,
+	RELIABLE_BUFFERING
+}
+
 func _ready() -> void:
 	Steam.connect("lobby_created", self, "_on_lobby_created")
 	Steam.connect("lobby_joined", self, "_on_lobby_joined")
@@ -123,7 +130,7 @@ func _get_lobby_members():
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
-	_send_p2p_packet("all", PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
+	_send_p2p_packet("all", PACKETS.HANDSHAKE, SENDTYPES.RELIABLE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -143,25 +150,24 @@ func _read_p2p_packet():
 		
 		var packetRead:Dictionary = bytes2var(packet.data.subarray(1, packetSize-1))
 		
+		print("[NET] Got packet with code: ", packetCode)
 		match packetCode:
 			PACKETS.HANDSHAKE: # first packet sent to establish connection
 				print("Got a handshake request from: %s", senderID)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
 			PACKETS.SPAWN_PLAYER:
-				# 	_send_p2p_packet("all", PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
+				print("Trying to spawn player on: ", packetRead)
 				gWorld.add_player_two(senderID)
 				gWorld.Player2.spawn_me(packetRead.x, packetRead.y)
 #		print("Read packet data: ", str(packetRead))
 
-func _send_p2p_packet(target:String, packetType:int, sendDict:Dictionary):
+func _send_p2p_packet(target:String, sendType:int, packetType:int, sendDict:Dictionary):
 	# send types
 	# 0 - unreliable, basic UDP send
 	# 1 - unreliable no delay, drop packets if no connection exists
 	# 2 - reliable message send, up to 1MB in a single message
 	# 3 - reliable with buffering (nagle algorithm)
-	
-	var sendType = 2
 	
 	var data:PoolByteArray = PoolByteArray()
 	data.append(packetType)
@@ -218,4 +224,4 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 		print("Session failure with %s [unknown error]" % str(lobbyID))
 
 func spawn_guest_player(posx:float, posy:float):
-	_send_p2p_packet("all", PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
+	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
