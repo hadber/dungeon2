@@ -1,9 +1,9 @@
 extends Node
 
 enum PACKETS {
-	HANDSHAKE, 
-	SPAWN_PLAYER,
-	WORLDSTATE
+	HANDSHAKE, # 1
+	SPAWN_PLAYER, # 2
+	WORLDSTATE # 3
 	}
 
 enum SENDTYPES {
@@ -130,7 +130,7 @@ func _get_lobby_members():
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
-	_send_p2p_packet("all", PACKETS.HANDSHAKE, SENDTYPES.RELIABLE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
+	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -151,6 +151,7 @@ func _read_p2p_packet():
 		var packetRead:Dictionary = bytes2var(packet.data.subarray(1, packetSize-1))
 		
 		print("[NET] Got packet with code: ", packetCode)
+		print(PACKETS)
 		match packetCode:
 			PACKETS.HANDSHAKE: # first packet sent to establish connection
 				print("Got a handshake request from: %s", senderID)
@@ -160,6 +161,8 @@ func _read_p2p_packet():
 				print("Trying to spawn player on: ", packetRead)
 				gWorld.add_player_two(senderID)
 				gWorld.Player2.spawn_me(packetRead.x, packetRead.y)
+			_:
+				print("[NET] Unknown: ", packetCode)
 #		print("Read packet data: ", str(packetRead))
 
 func _send_p2p_packet(target:String, sendType:int, packetType:int, sendDict:Dictionary):

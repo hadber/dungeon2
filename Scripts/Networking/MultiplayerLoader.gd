@@ -10,6 +10,6 @@ func add_multiplayer_scene(createLobby:bool = false): # we dont create a lobby i
 	var actualMP = mp_scene.instance()
 	if(createLobby):
 		actualMP._create_lobby()
-	else:
-		actualMP.spawn_guest_player() # this 
+#	else:
+#		actualMP.spawn_guest_player() # this 
 	add_child(actualMP)
