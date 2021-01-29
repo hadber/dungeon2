@@ -129,6 +129,8 @@ func _get_lobby_members():
 		var memberSteamName:String = Steam.getFriendPersonaName(memberSteamID)
 		# append them to the lobby members array
 		Global.lobbyMembers.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
+		# steam_id 		int
+		# steam_name	string
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
@@ -189,8 +191,8 @@ func _send_p2p_packet(target:String, sendType:int, packetType:int, sendDict:Dict
 	else:
 		Steam.sendP2PPacket(int(target), data, sendType, 0)
 
-func _on_lobby_chat_update(_lobbyID:int, _changedID:int, makingChangeID:int, chatState:int):
-	var changerName:String = Steam.getFriendPersonaName(makingChangeID)
+func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, chatState:int):
+	var changerName:String = Steam.getFriendPersonaName(_changedID)
 	
 	if chatState == 1: # player has joined the lobby
 		print(changerName, " has joined the lobby.")
@@ -203,7 +205,19 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, makingChangeID:int, cha
 	else: # unknown thing happened to player
 		print("Unknown change has occured for ", changerName)
 	
-	_get_lobby_members() # get the lobby members again since one of them has left.
+	_lobby_members_change(_changedID, chatState)
+#	_get_lobby_members() # get the lobby members again since one of them has left or joined.
+
+func _lobby_members_change(changedID:int, chatState:int):
+	if(chatState == 1):
+		var memberSteamName:String = Steam.getFriendPersonaName(changedID)
+		Global.lobbyMembers.append({"steam_id": changedID, "steam_name": memberSteamName})
+	elif(chatState in [2, 8, 16]):
+		for member in Global.lobbyMembers:
+			if member.steam_id == changedID:
+				Global.lobbyMembers.erase(member)
+	else:
+		_get_lobby_members()
 
 func _on_p2p_session_request(remoteID:int):
 	# name of player requesting peer to peer session
