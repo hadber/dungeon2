@@ -107,9 +107,16 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 		print("Successfully joined lobby (ID: %s)" % str(lobbyID)) 
 		Global.steamLobbyID = lobbyID
 		_get_lobby_members()
-#		Steam.getP2PSessionState() # maybe check whether a connection already exists?
-		_make_p2p_handshake()
-		spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+		
+		for member in Global.lobbyMembers:
+			var session:Dictionary = Steam.getP2PSessionState(member.steam_id)
+			if(session == {}): # session does not exist
+				_make_p2p_handshake()
+			else:
+				spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+		# if there is a connection active, we will get a dictionary that is populated with
+		# all sorts of things (check steam documentations to find out
+		# otherwise, we will get an empty dicitonary
 		
 	elif _response == 5: # k_EChatRoomEnterResponseError - the lobby join was unsuccesful
 		print("Failed joining lobby")
@@ -195,6 +202,7 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, ch
 	var changerName:String = Steam.getFriendPersonaName(_changedID)
 	
 	if chatState == 1: # player has joined the lobby
+		spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 		print(changerName, " has joined the lobby.")
 	elif chatState == 2: # player has left the lobby
 		print(changerName, " has left the lobby.")
@@ -206,7 +214,6 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, ch
 		print("Unknown change has occured for ", changerName)
 	
 	_lobby_members_change(_changedID, chatState)
-#	_get_lobby_members() # get the lobby members again since one of them has left or joined.
 
 func _lobby_members_change(changedID:int, chatState:int):
 	if(chatState == 1):
