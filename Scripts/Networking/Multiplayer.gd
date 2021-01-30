@@ -109,7 +109,7 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 		_get_lobby_members()
 		
 		for member in Global.lobbyMembers:
-			if(member.steam_id == Global.gsteamID):
+			if(member.steam_id == Global.gSteamID):
 				continue
 			var session:Dictionary = Steam.getP2PSessionState(member.steam_id)
 			if(session == {}): # session does not exist
