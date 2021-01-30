@@ -109,11 +109,12 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 		_get_lobby_members()
 		
 		for member in Global.lobbyMembers:
+			if(member.steam_id == Global.gsteamID):
+				continue
 			var session:Dictionary = Steam.getP2PSessionState(member.steam_id)
 			if(session == {}): # session does not exist
 				_make_p2p_handshake()
-			else:
-				spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+			spawn_remote_player(member.steam_id, gWorld.Player1.position.x, gWorld.Player1.position.y)
 		# if there is a connection active, we will get a dictionary that is populated with
 		# all sorts of things (check steam documentations to find out
 		# otherwise, we will get an empty dicitonary
@@ -142,7 +143,6 @@ func _get_lobby_members():
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
 	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
-	spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -202,7 +202,7 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, ch
 	var changerName:String = Steam.getFriendPersonaName(_changedID)
 	
 	if chatState == 1: # player has joined the lobby
-		spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+		spawn_remote_player(_makingChangeID, gWorld.Player1.position.x, gWorld.Player1.position.y)
 		print(changerName, " has joined the lobby.")
 	elif chatState == 2: # player has left the lobby
 		print(changerName, " has left the lobby.")
@@ -255,5 +255,5 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 	else: # unknown error happened 
 		print("Session failure with %s [unknown error]" % str(lobbyID))
 
-func spawn_remote_player(posx:float, posy:float):
-	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
+func spawn_remote_player(targetID:int, posx:float, posy:float):
+	_send_p2p_packet(str(targetID), SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
