@@ -108,13 +108,16 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 		Global.steamLobbyID = lobbyID
 		_get_lobby_members()
 		
+		# change the player's node name to their steam id
+		gWorld.Player1.name = str(Global.gSteamID)
+		
 		for member in Global.lobbyMembers:
 			if(member.steam_id == Global.gSteamID):
 				continue
 			var session:Dictionary = Steam.getP2PSessionState(member.steam_id)
 			if(session == {}): # session does not exist
 				_make_p2p_handshake()
-			spawn_remote_player(member.steam_id, gWorld.Player1.position.x, gWorld.Player1.position.y)
+			spawn_on_remote(member.steam_id, gWorld.Player1.position.x, gWorld.Player1.position.y)
 		# if there is a connection active, we will get a dictionary that is populated with
 		# all sorts of things (check steam documentations to find out
 		# otherwise, we will get an empty dicitonary
@@ -167,7 +170,7 @@ func _read_p2p_packet():
 				print("Got a handshake request from: ", senderID)
 				print(Steam.getP2PSessionState(int(senderID)))
 					# if there 
-				#spawn_remote_player(gWorld.Player1.position.x, gWorld.Player1.position.y)
+				#spawn_on_remote(gWorld.Player1.position.x, gWorld.Player1.position.y)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
 			PACKETS.SPAWN_PLAYER:
@@ -202,7 +205,7 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, ch
 	var changerName:String = Steam.getFriendPersonaName(_changedID)
 	
 	if chatState == 1: # player has joined the lobby
-		spawn_remote_player(_makingChangeID, gWorld.Player1.position.x, gWorld.Player1.position.y)
+		spawn_on_remote(_makingChangeID, gWorld.Player1.position.x, gWorld.Player1.position.y)
 		print(changerName, " has joined the lobby.")
 	elif chatState == 2: # player has left the lobby
 		print(changerName, " has left the lobby.")
@@ -223,6 +226,7 @@ func _lobby_members_change(changedID:int, chatState:int):
 		for member in Global.lobbyMembers:
 			if member.steam_id == changedID:
 				Global.lobbyMembers.erase(member)
+				gWorld.Player2.queue_free()
 	else:
 		_get_lobby_members()
 
@@ -255,5 +259,5 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 	else: # unknown error happened 
 		print("Session failure with %s [unknown error]" % str(lobbyID))
 
-func spawn_remote_player(targetID:int, posx:float, posy:float):
+func spawn_on_remote(targetID:int, posx:float, posy:float):
 	_send_p2p_packet(str(targetID), SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})

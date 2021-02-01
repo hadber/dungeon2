@@ -15,3 +15,4 @@ func _ready():
 func add_player_two(pSteamID:String):
 	Player2 = PlayerScene.instance()
 	Player2.get_node("CenterContainer/Name").text = Steam.getFriendPersonaName(int(pSteamID))
+	Player2.name = pSteamID
