@@ -1,6 +1,22 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Scripts/Networking/Multiplayer.gd" type="Script" id=1]
+[ext_resource path="res://Scripts/Networking/Client.gd" type="Script" id=2]
+[ext_resource path="res://Scripts/Networking/Server.gd" type="Script" id=3]
+[ext_resource path="res://Scripts/Networking/StateProcessing.gd" type="Script" id=4]
 
 [node name="Multiplayer" type="Node"]
 script = ExtResource( 1 )
+
+[node name="Server" type="Node" parent="."]
+script = ExtResource( 3 )
+
+[node name="StateProcessing" type="Node" parent="Server"]
+script = ExtResource( 4 )
+
+[node name="ProcessingTimer" type="Timer" parent="Server"]
+wait_time = 0.05
+
+[node name="Client" type="Node" parent="."]
+script = ExtResource( 2 )
+[connection signal="timeout" from="Server/ProcessingTimer" to="Server/StateProcessing" method="_proccess_state"]

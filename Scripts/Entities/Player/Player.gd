@@ -4,6 +4,7 @@ const MAX_SPEED = 400
 const ACCELERATION = 2500
 const FRICTION = 2500
 var velocity = Vector2()
+var networked:bool = false
 
 onready var animationPlayer = $AnimationPlayer
 
@@ -21,8 +22,12 @@ func _ready(): # once node entered tree
 	pass
 	
 func _physics_process(delta):
+	if(not networked):
+		_movement(delta)
 	#gWorld.WorldState.append()
 #	add_player_state()
+
+func _movement(delta):
 	if not Global.in_dialogue:
 		var input_vector = Vector2.ZERO
 		input_vector.x = Input.get_action_strength("right") - Input.get_action_strength("left")
@@ -32,12 +37,15 @@ func _physics_process(delta):
 		if input_vector != Vector2.ZERO:
 			animationPlayer.play("Run")
 			velocity = velocity.move_toward(input_vector * MAX_SPEED, ACCELERATION * delta)
-			
 		else:
 			animationPlayer.play("Idle")
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
 		velocity = move_and_slide(velocity)
+	add_player_state()
+
+func remote_movement(where:Vector2):
+	position = where
 
 func add_player_state():
 	var player_state = {"T": OS.get_system_time_msecs(), "P": get_global_position()}
-	gWorld.WorldState.append(player_state)
+	gWorld.add_player_state(player_state)

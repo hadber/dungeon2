@@ -127,4 +127,4 @@ shape = SubResource( 5 )
 
 [node name="Doors" type="Node2D" parent="."]
 
-[node name="Players" type="YSort" parent="."]
+[node name="Entities" type="YSort" parent="."]

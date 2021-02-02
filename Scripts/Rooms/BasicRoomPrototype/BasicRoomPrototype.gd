@@ -30,7 +30,7 @@ func _enter_tree():
 	if(gWorld.Player1 == null): # This is for debugging, if it has come to this, something bad probably happened
 		print("This is supposed to happen only during debugging. If you are seeing this, something bad likely happened.")
 		gWorld.Player1 = gWorld.PlayerScene.instance()
-	get_node("Players").add_child(gWorld.Player1)
+	get_node("Entities").add_child(gWorld.Player1)
 	gWorld.Player1.spawn_me(gWorld.spawn_side)
 	gWorld.currentRoom = self
 
@@ -53,7 +53,7 @@ func create_room():
 			midwall.set_deferred("disabled", false)
 
 func on_player_entered_door(which_side):
-	get_node("Players").remove_child(gWorld.Player1)
+	get_node("Entities").remove_child(gWorld.Player1)
 	
 	var root = get_tree().get_root()
 	# Remove the current room from the scene tree

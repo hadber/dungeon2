@@ -3,7 +3,8 @@ extends Node
 enum PACKETS {
 	HANDSHAKE, # 0
 	SPAWN_PLAYER, # 1
-	WORLDSTATE # 2
+	WORLDSTATE, # 2
+	PLAYERSTATE
 	}
 
 enum SENDTYPES {
@@ -12,6 +13,12 @@ enum SENDTYPES {
 	RELIABLE,
 	RELIABLE_BUFFERING
 }
+
+# is player host is basically hostSteamID == Global.gSteamID
+var hostSteamID:int
+var mpWorker:Object = null
+
+var lobbyMembers:Array = []
 
 func _ready() -> void:
 	Steam.connect("lobby_created", self, "_on_lobby_created")
@@ -60,6 +67,9 @@ func _on_lobby_created(connect: int, lobbyID: int):
 	if connect == 1: # k_EResultOK - The lobby was successfully created.
 		print("SUCCESS: The lobby was successfully created. (ID: ", lobbyID ,")")
 		Global.steamLobbyID = lobbyID
+		hostSteamID = Global.gSteamID
+		
+		mpWorker = $Client
 		
 		#Setting lobby data
 		Steam.setLobbyData(lobbyID, "title", "Meta Dungeon (%s) test lobby" % Global.version)
@@ -83,7 +93,8 @@ func _join_lobby(lobbyID:int):
 	
 	# just in case, clear previous members list
 	# if it just so happens this is not your first lobby
-	Global.lobbyMembers.clear()
+	lobbyMembers.clear()
+	mpWorker = $Server
 	
 	# request to join the lobby
 	# calls _on_lobby_joined() on success
@@ -95,10 +106,10 @@ func _leave_lobby():
 		Steam.leaveLobby(Global.steamLobbyID)
 		Global.steamLobbyID = 0
 		
-		for member in Global.lobbyMembers:
+		for member in lobbyMembers:
 			Steam.closeP2PSessionWithUser(member['steam_id'])
 		
-		Global.lobbyMembers.clear()
+		lobbyMembers.clear()
 	else: # player is not part of any lobby - how did we get to this point?
 		print("What are you trying to do? You are not part of any lobby! (perhaps an error occured?)")
 
@@ -106,12 +117,13 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 	if _response == 1: # k_EChatRoomEnterResponseSuccess - the lobby was successfully joined
 		print("Successfully joined lobby (ID: %s)" % str(lobbyID)) 
 		Global.steamLobbyID = lobbyID
+		hostSteamID = Steam.getLobbyOwner(lobbyID)
 		_get_lobby_members()
 		
 		# change the player's node name to their steam id
 		gWorld.Player1.name = str(Global.gSteamID)
 		
-		for member in Global.lobbyMembers:
+		for member in lobbyMembers:
 			if(member.steam_id == Global.gSteamID):
 				continue
 			var session:Dictionary = Steam.getP2PSessionState(member.steam_id)
@@ -127,7 +139,7 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 
 func _get_lobby_members():
 	# clear the lobby members, we're in a new lobby now
-	Global.lobbyMembers.clear()
+	lobbyMembers.clear()
 	
 	# get the number of lobby members
 	var totalMembers:int = Steam.getNumLobbyMembers(Global.steamLobbyID)
@@ -139,13 +151,13 @@ func _get_lobby_members():
 		# get their steam name
 		var memberSteamName:String = Steam.getFriendPersonaName(memberSteamID)
 		# append them to the lobby members array
-		Global.lobbyMembers.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
+		lobbyMembers.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
 		# steam_id 		int
 		# steam_name	string
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
-	_send_p2p_packet("all", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
+	_send_p2p_packet("host", SENDTYPES.RELIABLE, PACKETS.HANDSHAKE, {"message":"handshake", "from":Global.gSteamID}) # needs a bit of fixing later
 
 func _read_p2p_packet():
 	var packetSize:int = Steam.getAvailableP2PPacketSize(0)
@@ -173,11 +185,13 @@ func _read_p2p_packet():
 				#spawn_on_remote(gWorld.Player1.position.x, gWorld.Player1.position.y)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
+				print(packetRead)
+				$Client.update_worldstate(packetRead)
+			PACKETS.PLAYERSTATE:
+				$Server.update_remote_playerstate(packetRead, packet.steamIDRemote)
 			PACKETS.SPAWN_PLAYER:
 				print("Trying to spawn player on: ", packetRead)
-				gWorld.add_player_two(senderID)
-				gWorld.Player2.spawn_me(Vector2(packetRead.x, packetRead.y))
-				gWorld.currentRoom.get_node("Players").add_child(gWorld.Player2)
+				gWorld.add_player_two(senderID, Vector2(packetRead.x, packetRead.y))
 			_:
 				print("[NET] Unknown: ", packetCode)
 #		print("Read packet data: ", str(packetRead))
@@ -193,11 +207,26 @@ func _send_p2p_packet(target:String, sendType:int, packetType:int, sendDict:Dict
 	data.append(packetType)
 	data.append_array(var2bytes(sendDict))
 	
+	# maybe add a check as to whether player is host aswell?
+	# probably do
 	if target == "all": # broadcast to all members
-		if Global.lobbyMembers.size() > 1:
-			for member in Global.lobbyMembers:
+		if lobbyMembers.size() > 1:
+			for member in lobbyMembers:
 				if member['steam_id'] != Global.gSteamID:
 					Steam.sendP2PPacket(member['steam_id'], data, sendType, 0)
+		if hostSteamID == Global.gSteamID:
+			if packetType == PACKETS.WORLDSTATE:
+				$Client.update_worldstate(sendDict)
+	elif target == "host":
+		if hostSteamID == Global.gSteamID:
+			if packetType == PACKETS.PLAYERSTATE:
+				$Server.update_remote_playerstate(sendDict, Global.gSteamID)
+			
+			#print("Can't send a package to yourself!") 
+			# alternatively, this is probably a worldstate 
+			# so you might want to interpret it
+		else:
+			Steam.sendP2PPacket(hostSteamID, data, sendType, 0)
 	else:
 		Steam.sendP2PPacket(int(target), data, sendType, 0)
 
@@ -221,11 +250,15 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, ch
 func _lobby_members_change(changedID:int, chatState:int):
 	if(chatState == 1):
 		var memberSteamName:String = Steam.getFriendPersonaName(changedID)
-		Global.lobbyMembers.append({"steam_id": changedID, "steam_name": memberSteamName})
+		lobbyMembers.append({"steam_id": changedID, "steam_name": memberSteamName})
 	elif(chatState in [2, 8, 16]):
-		for member in Global.lobbyMembers:
+		if hostSteamID == Global.gSteamID: 
+			# if a player disconnects or is kicked
+			# make sure to remove them from the playerstate collection.
+			$Server.pStates.erase(changedID)
+		for member in lobbyMembers:
 			if member.steam_id == changedID:
-				Global.lobbyMembers.erase(member)
+				lobbyMembers.erase(member)
 				gWorld.Player2.queue_free()
 	else:
 		_get_lobby_members()
@@ -236,8 +269,8 @@ func _on_p2p_session_request(remoteID:int):
 	
 	print("Got a P2P session request, sending one back...")
 	# accept it, logic to deny in here aswell - perhaps if he is not in the lobby?
-	print(Global.lobbyMembers)
-	for member in Global.lobbyMembers:
+	print(lobbyMembers)
+	for member in lobbyMembers:
 		if(member.steam_id == remoteID):
 			Steam.acceptP2PSessionWithUser(remoteID)
 			_make_p2p_handshake() # acknowledge the session request, accept it and then send a handshake back

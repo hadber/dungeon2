@@ -49,7 +49,7 @@ modulate = Color( 1, 1, 1, 0.47451 )
 position = Vector2( 340, 318.586 )
 frames = SubResource( 1 )
 animation = "menuloop"
-frame = 2
+frame = 9
 speed_scale = 1.5
 playing = true
 
