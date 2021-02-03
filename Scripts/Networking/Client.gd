@@ -33,7 +33,7 @@ func _physics_process(_delta):
 				continue
 			if(gWorld.currentRoom.get_node("Entities")).has_node(str(playerID)):
 				var newPos:Vector2 = lerp(worldStateBuffer[0][playerID]["P"], worldStateBuffer[1][playerID]["P"], interpolationFactor)
-				print(newPos)
+				print(worldStateBuffer[0][playerID]["P"], worldStateBuffer[1][playerID]["P"], interpolationFactor, newPos)
 				gWorld.currentRoom.get_node("Entities/" + str(playerID)).remote_movement(newPos)
 			else:
 				gWorld.add_remote_player(str(playerID), worldStateBuffer[1][playerID]["P"])
