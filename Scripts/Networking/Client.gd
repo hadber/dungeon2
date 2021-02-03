@@ -20,6 +20,7 @@ func _physics_process(_delta):
 		while worldStateBuffer.size() > 2 and renderTime > worldStateBuffer[1]["T"]:
 			worldStateBuffer.remove(0)
 		var interpolationFactor = float(renderTime - worldStateBuffer[0]["T"]) / float(worldStateBuffer[1]["T"] - worldStateBuffer[0]["T"])
+		print(worldStateBuffer)
 		for playerID in worldStateBuffer[1].keys():
 			if str(playerID) == "T":
 				# its the timestamp of the worldstate (one of the dict entries)
@@ -31,7 +32,8 @@ func _physics_process(_delta):
 				# the player doesnt have a PAST worldstate, we wait a bit until one is generated
 				continue
 			if(gWorld.currentRoom.get_node("Entities")).has_node(str(playerID)):
-				var newPos = lerp(worldStateBuffer[0][playerID]["P"], worldStateBuffer[1][playerID]["P"], interpolationFactor)
+				var newPos:Vector2 = lerp(worldStateBuffer[0][playerID]["P"], worldStateBuffer[1][playerID]["P"], interpolationFactor)
+				print(newPos)
 				gWorld.currentRoom.get_node("Entities/" + str(playerID)).remote_movement(newPos)
 			else:
 				gWorld.add_remote_player(str(playerID), worldStateBuffer[1][playerID]["P"])
