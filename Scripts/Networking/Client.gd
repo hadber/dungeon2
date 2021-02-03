@@ -20,7 +20,7 @@ func _physics_process(_delta):
 		while worldStateBuffer.size() > 2 and renderTime > worldStateBuffer[1]["T"]:
 			worldStateBuffer.remove(0)
 		var interpolationFactor = float(renderTime - worldStateBuffer[0]["T"]) / float(worldStateBuffer[1]["T"] - worldStateBuffer[0]["T"])
-		for playerID in worldStateBuffer[0].keys():
+		for playerID in worldStateBuffer[1].keys():
 			if str(playerID) == "T":
 				# its the timestamp of the worldstate (one of the dict entries)
 				continue

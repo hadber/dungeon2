@@ -185,7 +185,7 @@ func _read_p2p_packet():
 				#spawn_on_remote(gWorld.Player1.position.x, gWorld.Player1.position.y)
 			PACKETS.WORLDSTATE: # worldstate update
 				print("Got a new worldstate update, please do something with this!")
-				print(packetRead)
+#				print(packetRead)
 				$Client.update_worldstate(packetRead)
 			PACKETS.PLAYERSTATE:
 				$Server.update_remote_playerstate(packetRead, packet.steamIDRemote)
