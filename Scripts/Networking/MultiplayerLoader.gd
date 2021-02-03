@@ -13,4 +13,3 @@ func add_multiplayer_scene(createLobby:bool = false): # we dont create a lobby i
 #	else:
 #		actualMP.spawn_guest_player() # this 
 	get_tree().get_root().add_child(actualMP)
-	gWorld.mpNode = actualMP

@@ -191,7 +191,7 @@ func _read_p2p_packet():
 				$Server.update_remote_playerstate(packetRead, packet.steamIDRemote)
 			PACKETS.SPAWN_PLAYER:
 				print("Trying to spawn player on: ", packetRead)
-				gWorld.add_player_two(senderID, Vector2(packetRead.x, packetRead.y))
+				gWorld.add_remote_player(senderID, Vector2(packetRead.x, packetRead.y))
 			_:
 				print("[NET] Unknown: ", packetCode)
 #		print("Read packet data: ", str(packetRead))
@@ -259,7 +259,7 @@ func _lobby_members_change(changedID:int, chatState:int):
 		for member in lobbyMembers:
 			if member.steam_id == changedID:
 				lobbyMembers.erase(member)
-				gWorld.Player2.queue_free()
+				gWorld.remove_remote_player(str(changedID))
 	else:
 		_get_lobby_members()
 

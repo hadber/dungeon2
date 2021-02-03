@@ -1,10 +1,5 @@
 extends Node
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
 onready var Multiplayer = get_parent()
 onready var Client = get_parent().get_node("Client")
 
@@ -25,7 +20,3 @@ func update_remote_playerstate(recievedState:Dictionary, playerID:int):
 			pStates[playerID] = recievedState
 	else:
 		pStates[playerID] = recievedState
-#	for player in gWorld.currentRoom.get_node("Entities"):
-#		if player.name == str(playerID):
-#			player.position = Vector2(pState.P.x, pState.P.y)
-	
