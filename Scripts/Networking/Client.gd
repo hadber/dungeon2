@@ -3,6 +3,13 @@ extends Node
 onready var Multiplayer = get_parent()
 var oldStateTime:int = 0
 var worldStateBuffer:Array = []
+
+var cLatency:int
+var clientClock:int 
+var deltaLatency:int = 0
+var decimalCollector:float = 0
+var latencyArray:Array = []
+
 const INTERP_OFFSET = 100
 
 func _process(_delta):
@@ -14,7 +21,20 @@ func update_worldstate(newState):
 		worldStateBuffer.append(newState)
 
 # [older past worldstate (extrapolation), most recent past worldstate, nearest future world state, any other future world state]
-func _physics_process(_delta):
+func _physics_process(delta):
+	
+	# clock synchronization; delta ~= 0.01667 (if 60 fps)
+	# when we turn the seconds into miliseconds (multiply by 1000)
+	# we are going to lose the 67 (last two decimals)
+	# as such, we collect them and when they go over 1 integer,
+	# we can add the to the clock to keep synchronized
+	clientClock += int(delta * 1000) + deltaLatency
+	deltaLatency = 0
+	decimalCollector += (delta*1000) - int(delta*1000)
+	if decimalCollector >= 1.0:
+		clientClock += 1
+		decimalCollector -= 1.0
+	
 	var renderTime = OS.get_system_time_msecs() - INTERP_OFFSET
 	if worldStateBuffer.size() > 1:
 		while worldStateBuffer.size() > 2 and renderTime > worldStateBuffer[2]["T"]:
@@ -50,7 +70,42 @@ func _physics_process(_delta):
 					var positionDelta = worldStateBuffer[1][playerID]["P"] - worldStateBuffer[0][playerID]["P"]
 					var newPos:Vector2 = worldStateBuffer[1][playerID]["P"] + (positionDelta * extrapolationFactor)
 					gWorld.currentRoom.get_node("Entities/" + str(playerID)).remote_movement(newPos)
-			
+
+func start_clock_sync():
+	var pTime:Dictionary = {"T": OS.get_system_time_msecs()}
+	Multiplayer._send_p2p_packet("host", Multiplayer.SENDTYPES.RELIABLE, Multiplayer.PACKETS.GET_SERVERTIME, pTime)
+	
+	var clockTimer = Timer.new()
+	clockTimer.wait_time = 0.5
+	clockTimer.autostart = true
+	clockTimer.connect("timeout", self, "update_latency")
+	self.add_child(clockTimer)
+
+func update_latency():
+	var pTime:Dictionary = {"T": OS.get_system_time_msecs()}
+	Multiplayer._send_p2p_packet("host", Multiplayer.SENDTYPES.RELIABLE, Multiplayer.PACKETS.LATENCY_REQUEST, pTime)
+
+func update_clock_latency(sTimes):
+	latencyArray.append((OS.get_system_time_msecs() - sTimes.C) / 2)
+	if latencyArray.size() == 9:
+		var totalLatency = 0
+		latencyArray.sort()
+		var median = latencyArray[4]
+		for i in range(latencyArray.size()-1, -1, -1):
+			if latencyArray[i] > median * 2 and latencyArray[i] > 20:
+				latencyArray.remove(i)
+			else:
+				totalLatency += latencyArray[i]
+		deltaLatency = (totalLatency / latencyArray.size()) - cLatency
+		cLatency = totalLatency / latencyArray.size()
+		print("New latency: ", cLatency)
+		print("Delta: ", deltaLatency)
+		latencyArray.clear()
+
+func set_server_time(sTimes:Dictionary):
+	cLatency = (OS.get_system_time_msecs() - sTimes.C) / 2
+	clientClock = sTimes.S + cLatency
+
 func update_worldstateOLD(newState):
 		newState.erase("T")
 		newState.erase(Global.gSteamID)

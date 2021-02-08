@@ -4,7 +4,10 @@ enum PACKETS {
 	HANDSHAKE, # 0
 	SPAWN_PLAYER, # 1
 	WORLDSTATE, # 2
-	PLAYERSTATE
+	PLAYERSTATE,
+	GET_SERVERTIME,
+	LATENCY_REQUEST,
+	UPDATE_LATENCY
 	}
 
 enum SENDTYPES {
@@ -119,6 +122,7 @@ func _on_lobby_joined(lobbyID:int, _permissions:int, _locked:bool, _response:int
 		Global.steamLobbyID = lobbyID
 		hostSteamID = Steam.getLobbyOwner(lobbyID)
 		_get_lobby_members()
+		$Client.start_clock_sync()
 		
 		# change the player's node name to their steam id
 		gWorld.Player1.name = str(Global.gSteamID)
@@ -192,6 +196,20 @@ func _read_p2p_packet():
 			PACKETS.SPAWN_PLAYER:
 				print("Trying to spawn player on: ", packetRead)
 				gWorld.add_remote_player(senderID, Vector2(packetRead.x, packetRead.y))
+			PACKETS.GET_SERVERTIME:
+				print("GET_SERVERTIME")
+				var sTimes:Dictionary = {"S": OS.get_system_time_msecs(), "C": packetRead.T}
+				_send_p2p_packet(senderID, SENDTYPES.RELIABLE, PACKETS.SET_SERVERTIME, sTimes)
+			PACKETS.SET_SERVERTIME:
+				print("SET_SERVERTIME")
+				$Client.set_server_time(packetRead)
+			PACKETS.LATENCY_REQUEST:
+				print("LATENCY_REQUEST")
+				var sTimes:Dictionary = {"S": OS.get_system_time_msecs(), "C": packetRead.T}
+				_send_p2p_packet(senderID, SENDTYPES.RELIABLE, PACKETS.UPDATE_LATENCY, sTimes)
+			PACKETS.UPDATE_LATENCY:
+				print("UPDATE_LATENCY")
+				$Client.update_clock_latency(packetRead)
 			_:
 				print("[NET] Unknown: ", packetCode)
 #		print("Read packet data: ", str(packetRead))
@@ -221,7 +239,12 @@ func _send_p2p_packet(target:String, sendType:int, packetType:int, sendDict:Dict
 		if hostSteamID == Global.gSteamID:
 			if packetType == PACKETS.PLAYERSTATE:
 				$Server.update_remote_playerstate(sendDict, Global.gSteamID)
-			
+			elif packetType == PACKETS.GET_SERVERTIME:
+				var sTimes:Dictionary = {"S": OS.get_system_time_msecs(), "C": sendDict.T}
+				$Client.set_server_time(sTimes)
+			elif packetType == PACKETS.LATENCY_REQUEST:
+				var sTimes:Dictionary = {"S": OS.get_system_time_msecs(), "C": sendDict.T}
+				$Client.update_clock_latency(sTimes)
 			#print("Can't send a package to yourself!") 
 			# alternatively, this is probably a worldstate 
 			# so you might want to interpret it
