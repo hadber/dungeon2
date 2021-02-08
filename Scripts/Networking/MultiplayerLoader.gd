@@ -1,6 +1,6 @@
 extends Node
 
-const mp_scene = preload("res://Scenes/Multiplayer.tscn")
+const mp_scene = preload("res://Scenes/Multiplayer/Multiplayer.tscn")
 
 func _ready():
 	if(Global.isPlayerHost == true):

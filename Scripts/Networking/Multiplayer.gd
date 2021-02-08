@@ -269,7 +269,7 @@ func _on_p2p_session_request(remoteID:int):
 	
 	print("Got a P2P session request, sending one back...")
 	# accept it, logic to deny in here aswell - perhaps if he is not in the lobby?
-	print(lobbyMembers)
+	#print(lobbyMembers)
 	for member in lobbyMembers:
 		if(member.steam_id == remoteID):
 			Steam.acceptP2PSessionWithUser(remoteID)
