@@ -71,8 +71,7 @@ func close_doors():
 		if tDoor in sDoors:
 			midwall.set_deferred("disabled", false)
 			doors[tDoor].get_node("area").monitoring = false
-			
-	
+
 func open_doors():
 	for tDoor in types:
 		var wall = $Walls.get_node(tDoor)

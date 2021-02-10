@@ -116,3 +116,9 @@ func update_worldstateOLD(newState):
 			else:
 				print("spawning player")
 				gWorld.Player2.spawn_me(newState[playerID]["P"])
+
+func spawn_player():
+	pass
+	
+func despawn_player():
+	pass

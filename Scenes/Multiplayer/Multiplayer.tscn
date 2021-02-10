@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scripts/Networking/StateProcessing.gd" type="Script" id=1]
 [ext_resource path="res://Scripts/Networking/Multiplayer.gd" type="Script" id=2]
 [ext_resource path="res://Scripts/Networking/Server.gd" type="Script" id=3]
 [ext_resource path="res://Scripts/Networking/Client.gd" type="Script" id=4]
+[ext_resource path="res://Scenes/Multiplayer/Chat.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Scenes/Multiplayer/Playerlist.tscn" type="PackedScene" id=6]
 
 [node name="Multiplayer" type="Node"]
 script = ExtResource( 2 )
@@ -19,4 +21,14 @@ wait_time = 0.05
 
 [node name="Client" type="Node" parent="."]
 script = ExtResource( 4 )
+
+[node name="ChatBox" parent="." instance=ExtResource( 5 )]
+margin_top = 540.0
+margin_bottom = 700.0
+
+[node name="Playerlist" parent="." instance=ExtResource( 6 )]
+margin_left = 420.0
+margin_top = 250.0
+margin_right = 590.0
+margin_bottom = 381.0
 [connection signal="timeout" from="Server/ProcessingTimer" to="Server/StateProcessing" method="_proccess_state"]

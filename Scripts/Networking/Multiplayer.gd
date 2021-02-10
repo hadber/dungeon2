@@ -22,7 +22,12 @@ enum SENDTYPES {
 var hostSteamID:int
 var mpWorker:Object = null
 
+var membersDownloaded:int = 0
+var lChanged:float = false
+
 var lobbyMembers:Array = []
+
+signal playerlist_update
 
 func _ready() -> void:
 	Steam.connect("lobby_created", self, "_on_lobby_created")
@@ -33,6 +38,7 @@ func _ready() -> void:
 #	Steam.connect("lobby_invite", self, "_on_Lobby_Invite") # get invited to lobby (steam UI takes care of it)
 	Steam.connect("p2p_session_request", self, "_on_p2p_session_request")
 	Steam.connect("p2p_session_connect_fail", self, "_on_p2p_session_connect_fail")
+	Steam.connect("avatar_loaded", self, "_on_loaded_avatar")
 	
 	_check_command_line()
 
@@ -157,8 +163,11 @@ func _get_lobby_members():
 		var memberSteamName:String = Steam.getFriendPersonaName(memberSteamID)
 		# append them to the lobby members array
 		lobbyMembers.append({"steam_id": memberSteamID, "steam_name": memberSteamName})
+		Steam.getPlayerAvatar(1, memberSteamID)
 		# steam_id 		int
 		# steam_name	string
+		
+	lChanged = true
 
 func _make_p2p_handshake():
 	print("Sending a p2p handshake request to the lobby...")
@@ -198,18 +207,14 @@ func _read_p2p_packet():
 				print("Trying to spawn player on: ", packetRead)
 				gWorld.add_remote_player(senderID, Vector2(packetRead.x, packetRead.y))
 			PACKETS.GET_SERVERTIME:
-				print("GET_SERVERTIME")
 				var sTimes:Dictionary = {"S": OS.get_system_time_msecs(), "C": packetRead.T}
 				_send_p2p_packet(senderID, SENDTYPES.RELIABLE, PACKETS.SET_SERVERTIME, sTimes)
 			PACKETS.SET_SERVERTIME:
-				print("SET_SERVERTIME")
 				$Client.set_server_time(packetRead)
 			PACKETS.LATENCY_REQUEST:
-				print("LATENCY_REQUEST")
 				var sTimes:Dictionary = {"S": OS.get_system_time_msecs(), "C": packetRead.T}
 				_send_p2p_packet(senderID, SENDTYPES.RELIABLE, PACKETS.UPDATE_LATENCY, sTimes)
 			PACKETS.UPDATE_LATENCY:
-				print("UPDATE_LATENCY")
 				$Client.update_clock_latency(packetRead)
 			_:
 				print("[NET] Unknown: ", packetCode)
@@ -259,13 +264,13 @@ func _on_lobby_chat_update(_lobbyID:int, _changedID:int, _makingChangeID:int, ch
 	
 	if chatState == 1: # player has joined the lobby
 		spawn_on_remote(_makingChangeID, gWorld.Player1.position.x, gWorld.Player1.position.y)
-		print(changerName, " has joined the lobby.")
+		print(changerName, " has joined the game.")
 	elif chatState == 2: # player has left the lobby
-		print(changerName, " has left the lobby.")
+		print(changerName, " has left the game.")
 	elif chatState == 8: # player has been kicked? - tbh this isnt even implemented in the steamworks backend
-		print(changerName, " has been kicked from the lobby.")
+		print(changerName, " has been kicked from the game.")
 	elif chatState == 16: # player has been banned
-		print(changerName, " has been banned from the lobby.")
+		print(changerName, " has been banned from the game.")
 	else: # unknown thing happened to player
 		print("Unknown change has occured for ", changerName)
 	
@@ -275,6 +280,14 @@ func _lobby_members_change(changedID:int, chatState:int):
 	if(chatState == 1):
 		var memberSteamName:String = Steam.getFriendPersonaName(changedID)
 		lobbyMembers.append({"steam_id": changedID, "steam_name": memberSteamName})
+		Steam.getPlayerAvatar(1, changedID)
+		lChanged = true
+		# when a new member joins the lobby, we trick the callback into thinking
+		# it has already downloaded the avatars for lobbyMembers size - 1
+		# so when the callback triggers, it thinks it loaded all the avatars
+		# which it tehnically did, since we only want it to load 1 avatar
+		# this is filthy and i dont like that i have to do this
+		membersDownloaded = lobbyMembers.size() - 1
 	elif(chatState in [2, 8, 16]):
 		if hostSteamID == Global.gSteamID: 
 			# if a player disconnects or is kicked
@@ -318,3 +331,35 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 
 func spawn_on_remote(targetID:int, posx:float, posy:float):
 	_send_p2p_packet(str(targetID), SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
+
+func _on_loaded_avatar(playerID:int, size, buffer):
+	print("loaded avatar triggered")
+	var pAvatar = Image.new()
+	var pAvatarTexture = ImageTexture.new()
+	pAvatar.create(size, size, false, Image.FORMAT_RGBAF)
+
+	pAvatar.lock()
+	for y in range(0, size):
+		for x in range(0, size):
+			var pixel = 4 * (x + y * size)
+			var r = float(buffer[pixel]) / 255
+			var g = float(buffer[pixel+1]) / 255
+			var b = float(buffer[pixel+2]) / 255
+			var a = float(buffer[pixel+3]) / 255
+			pAvatar.set_pixel(x, y, Color(r, g, b, a)) 
+	pAvatar.unlock()
+
+	pAvatarTexture.create_from_image(pAvatar)
+	
+	for member in lobbyMembers:
+		if member['steam_id'] == playerID:
+			member['avatar'] = pAvatarTexture
+	
+	# just to be safe in the future, we don't know if we'll need the avatar for other
+	# things in the networking side and we don't want to update it every time we get a new
+	# avatar
+	membersDownloaded += 1
+	if lChanged && membersDownloaded == len(lobbyMembers):
+		membersDownloaded = 0
+		lChanged = false
+		emit_signal("playerlist_update")
