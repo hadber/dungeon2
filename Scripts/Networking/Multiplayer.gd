@@ -332,7 +332,7 @@ func _on_p2p_session_connect_fail(lobbyID:int, session_error:int):
 func spawn_on_remote(targetID:int, posx:float, posy:float):
 	_send_p2p_packet(str(targetID), SENDTYPES.RELIABLE, PACKETS.SPAWN_PLAYER, {"x": posx, "y": posy})
 
-func _on_loaded_avatar(playerID:int, size, buffer):
+func _on_loaded_avatar(playerID:int, size:int, buffer:PoolByteArray):
 	print("loaded avatar triggered")
 	var pAvatar = Image.new()
 	var pAvatarTexture = ImageTexture.new()

@@ -27,8 +27,8 @@ margin_top = 540.0
 margin_bottom = 700.0
 
 [node name="Playerlist" parent="." instance=ExtResource( 6 )]
-margin_left = 420.0
-margin_top = 250.0
-margin_right = 590.0
-margin_bottom = 381.0
+margin_left = 460.0
+margin_top = 240.0
+margin_right = 630.0
+margin_bottom = 371.0
 [connection signal="timeout" from="Server/ProcessingTimer" to="Server/StateProcessing" method="_proccess_state"]

@@ -35,7 +35,8 @@ func _physics_process(delta):
 		clientClock += 1
 		decimalCollector -= 1.0
 	
-	var renderTime = OS.get_system_time_msecs() - INTERP_OFFSET
+	#var renderTime = OS.get_system_time_msecs() - INTERP_OFFSET
+	var renderTime = clientClock - INTERP_OFFSET
 	if worldStateBuffer.size() > 1:
 		while worldStateBuffer.size() > 2 and renderTime > worldStateBuffer[2]["T"]:
 			worldStateBuffer.remove(0)
@@ -85,7 +86,7 @@ func update_latency():
 	var pTime:Dictionary = {"T": OS.get_system_time_msecs()}
 	Multiplayer._send_p2p_packet("host", Multiplayer.SENDTYPES.RELIABLE, Multiplayer.PACKETS.LATENCY_REQUEST, pTime)
 
-func update_clock_latency(sTimes):
+func update_clock_latency(sTimes:Dictionary):
 	latencyArray.append((OS.get_system_time_msecs() - sTimes.C) / 2)
 	if latencyArray.size() == 9:
 		var totalLatency = 0
@@ -115,10 +116,10 @@ func update_worldstateOLD(newState):
 				gWorld.currentRoom.get_node("Entities/" + str(playerID)).remote_movement(newState[playerID]["P"])
 			else:
 				print("spawning player")
-				gWorld.Player2.spawn_me(newState[playerID]["P"])
+				spawn_player(playerID, newState[playerID]["P"])
 
-func spawn_player():
-	pass
+func spawn_player(pSteamID:String, pPos:Vector2):
+	gWorld.add_remote_player(pSteamID, pPos)
 	
-func despawn_player():
-	pass
+func despawn_player(pSteamID:String):
+	gWorld.remove_remote_player(pSteamID)
