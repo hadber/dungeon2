@@ -71,6 +71,7 @@ func close_doors():
 		if tDoor in sDoors:
 			midwall.set_deferred("disabled", false)
 			doors[tDoor].get_node("area").monitoring = false
+			doors[tDoor].close_me()
 
 func open_doors():
 	for tDoor in types:
@@ -80,3 +81,4 @@ func open_doors():
 		if tDoor in sDoors:
 			midwall.set_deferred("disabled", true)
 			doors[tDoor].get_node("area").monitoring = true
+			doors[tDoor].open_me()

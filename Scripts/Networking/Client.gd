@@ -107,17 +107,6 @@ func set_server_time(sTimes:Dictionary):
 	cLatency = (OS.get_system_time_msecs() - sTimes.C) / 2
 	clientClock = sTimes.S + cLatency
 
-func update_worldstateOLD(newState):
-		newState.erase("T")
-		newState.erase(Global.gSteamID)
-		
-		for playerID in newState.keys():
-			if(gWorld.currentRoom.get_node("Entities")).has_node(str(playerID)):
-				gWorld.currentRoom.get_node("Entities/" + str(playerID)).remote_movement(newState[playerID]["P"])
-			else:
-				print("spawning player")
-				spawn_player(playerID, newState[playerID]["P"])
-
 func spawn_player(pSteamID:String, pPos:Vector2):
 	gWorld.add_remote_player(pSteamID, pPos)
 	
