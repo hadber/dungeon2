@@ -13,7 +13,7 @@ onready var animationPlayer = $AnimationPlayer
 
 func spawn_me(where:Vector2):
 	# This function is called when a player enter a new room via a door
-	# Called by the door it enter through, to spawn in the new room
+	# Called by the door it enterd through, to spawn in the new room
 	position = where
 	pass
 
