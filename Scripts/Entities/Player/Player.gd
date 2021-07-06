@@ -1,10 +1,12 @@
-extends KinematicBody2D
+extends "../Entity.gd"
 
 const MAX_SPEED = 400
 const ACCELERATION = 2500
 const FRICTION = 2500
 var velocity = Vector2()
 var networked:bool = false
+onready var invulnerable = false
+
 
 onready var animationPlayer = $AnimationPlayer
 
@@ -49,3 +51,21 @@ func remote_movement(where:Vector2):
 func add_player_state():
 	var player_state = {"T": OS.get_system_time_msecs(), "P": get_global_position()}
 	gWorld.add_player_state(player_state)
+
+func toggle_invulnerable(itime:float): # set invulnerable for itime time
+	print("toggled invulnerable")
+	if invulnerable: # was invulnerable, revert changes
+		invulnerable = false
+		$Area2D.monitoring = true
+		self.modulate = Color(1, 1, 1)
+	else: # makes the player invulnerable, add necessary changes
+		invulnerable = true
+		$Area2D.monitoring = false
+		$Tween.interpolate_callback(self, itime, "toggle_invulnerable", 0)
+		$Tween.start()
+		self.modulate = Color(0, 1, 0)
+ 
+func take_damage(amount:float):
+	if not invulnerable:
+		.take_damage(amount) # call it in base class (in Entity.gd)
+		toggle_invulnerable(1.0) # and make yourself invulnerable

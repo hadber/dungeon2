@@ -1,6 +1,27 @@
-extends KinematicBody2D
+extends "Entity.gd"
 
+const SPEED = 260
+var velocity = Vector2()
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	position = Vector2(450, 250)
+	$Area2D.connect("body_entered", self, "on_Area2D_Body_Entered")
+	
+	spawn()
+	
+func _physics_process(delta):
+	follow_player(delta)
+
+func spawn():
+	#Vector2(randf() * 200 + 100, randf() * 200 + 100)
+	position = Vector2(250, 300)
+	print("I think I spawned....")
+
+func follow_player(delta):
+	var playerPos = gWorld.Player1.position
+	velocity = velocity.move_toward(playerPos - position, SPEED * delta)
+	velocity = move_and_slide(velocity)
+
+func on_Area2D_Body_Entered(body: Node):
+	if(body == gWorld.Player1):
+		body.take_damage(10)
+		print("damaged body for 10")
