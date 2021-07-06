@@ -57,13 +57,13 @@ func toggle_invulnerable(itime:float): # set invulnerable for itime time
 	if invulnerable: # was invulnerable, revert changes
 		invulnerable = false
 		$Area2D.monitoring = true
-		self.modulate = Color(1, 1, 1)
+		self.modulate = Color(1, 1, 1) # placeholder for coming back from anim
 	else: # makes the player invulnerable, add necessary changes
 		invulnerable = true
 		$Area2D.monitoring = false
 		$Tween.interpolate_callback(self, itime, "toggle_invulnerable", 0)
 		$Tween.start()
-		self.modulate = Color(0, 1, 0)
+		self.modulate = Color(0, 1, 0) # placeholder for animation or such
  
 func take_damage(amount:float):
 	if not invulnerable:

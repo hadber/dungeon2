@@ -1,6 +1,7 @@
 extends "Entity.gd"
 
 const SPEED = 260
+const ACCELERATION = 1600
 var velocity = Vector2()
 
 func _ready():
@@ -18,7 +19,7 @@ func spawn():
 
 func follow_player(delta):
 	var playerPos = gWorld.Player1.position
-	velocity = velocity.move_toward(playerPos - position, SPEED * delta)
+	velocity = velocity.move_toward((playerPos - position).normalized() * SPEED, ACCELERATION * delta)
 	velocity = move_and_slide(velocity)
 
 func on_Area2D_Body_Entered(body: Node):
