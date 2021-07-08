@@ -3,12 +3,12 @@
 [ext_resource path="res://Scripts/Entities/Player/Player.gd" type="Script" id=1]
 [ext_resource path="res://Assets/Entities/Player/player_spritesheet.png" type="Texture" id=2]
 
-[sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 5, 2 )
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 4.29418, 1.72015 )
 
-[sub_resource type="CapsuleShape2D" id=2]
-radius = 8.0
-height = 8.0
+[sub_resource type="CapsuleShape2D" id=1]
+radius = 8.08974
+height = 9.56291
 
 [sub_resource type="Animation" id=3]
 resource_name = "Idle"
@@ -54,9 +54,6 @@ height = 12.4722
 position = Vector2( 0, -33 )
 scale = Vector2( 3, 3 )
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_group_": true
-}
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 margin_left = -13.3333
@@ -85,16 +82,18 @@ hframes = 6
 frame = 4
 
 [node name="FeetCollision" type="CollisionShape2D" parent="."]
-position = Vector2( -1, 11 )
-shape = SubResource( 1 )
+position = Vector2( -1.66667, 11.21 )
+shape = SubResource( 2 )
 
-[node name="KinematicBody2D" type="KinematicBody2D" parent="."]
+[node name="Body" type="KinematicBody2D" parent="." groups=[
+"player",
+]]
 collision_layer = 2
 collision_mask = 2
 
-[node name="BodyCollision" type="CollisionShape2D" parent="KinematicBody2D"]
-position = Vector2( -1, -1 )
-shape = SubResource( 2 )
+[node name="BodyCollision" type="CollisionShape2D" parent="Body"]
+position = Vector2( -1.0525, 0.627397 )
+shape = SubResource( 1 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "Idle"

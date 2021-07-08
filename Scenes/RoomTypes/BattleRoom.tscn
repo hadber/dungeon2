@@ -8,6 +8,3 @@ script = ExtResource( 2 )
 
 [node name="room_sprite" parent="." index="0"]
 modulate = Color( 0.87451, 0.466667, 0.466667, 1 )
-
-[node name="Walls" parent="." index="2"]
-visible = false

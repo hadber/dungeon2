@@ -42,7 +42,7 @@ func _movement(delta):
 		else:
 			animationPlayer.play("Idle")
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
-		velocity = move_and_slide(velocity)
+		velocity = move_and_slide(velocity) 
 	add_player_state()
 
 func remote_movement(where:Vector2):
